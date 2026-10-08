@@ -1,0 +1,16 @@
+.build/
+dist/
+outputs/
+.DS_Store
+.env*
+*.key
+*.pem
+*.p12
+*.mobileprovision
+recovery/
+verification/
+
+__pycache__/
+*.pyc
+
+Caffeine/Resources/*.iconset/
