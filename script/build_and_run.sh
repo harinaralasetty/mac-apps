@@ -48,7 +48,18 @@ case "$MODE" in
   *) /usr/bin/open "$APP_BUNDLE";;
 esac
 case "$MODE" in
-  --verify) sleep 1; pgrep -x "$APP_NAME" >/dev/null;;
+  --verify)
+    sleep 1
+    if ! /usr/bin/python3 - "$APP_BUNDLE/Contents/MacOS/$APP_NAME" <<'PY'
+import subprocess, sys
+paths = subprocess.check_output(['ps', '-axo', 'comm='], text=True).splitlines()
+sys.exit(0 if sys.argv[1] in [path.strip() for path in paths] else 1)
+PY
+    then
+      echo "No process running from $APP_BUNDLE; an installed instance may have prevented a second launch." >&2
+      exit 1
+    fi
+    ;;
   --logs) exec /usr/bin/log stream --info --style compact --predicate "process == \"$APP_NAME\"";;
   --telemetry) exec /usr/bin/log stream --info --style compact --predicate "subsystem == \"$BUNDLE_ID\"";;
 esac

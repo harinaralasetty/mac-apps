@@ -11,7 +11,10 @@ struct MicrophoneMuteService {
         guard let device = defaultInputDevice() else {
             return .unavailable("No default microphone found")
         }
+        return state(device: device)
+    }
 
+    private func state(device: AudioDeviceID) -> MicrophoneState {
         var address = muteAddress()
         guard AudioObjectHasProperty(device, &address) else {
             return .unavailable("This microphone has no mute control")
@@ -33,10 +36,20 @@ struct MicrophoneMuteService {
     }
 
     func toggle() -> MicrophoneState {
-        let current = state()
-        guard current == .live || current == .muted,
-              let device = defaultInputDevice() else {
+        guard let device = defaultInputDevice() else {
+            return .unavailable("No default microphone found")
+        }
+        return toggle(device: device)
+    }
+
+    // Allows the opt-in hardware test to pin both transitions to one device.
+    func toggle(device: AudioDeviceID) -> MicrophoneState {
+        let current = state(device: device)
+        guard current == .live || current == .muted else {
             return current
+        }
+        guard defaultInputDevice() == device else {
+            return .unavailable("Default microphone changed; try again")
         }
 
         var address = muteAddress()
@@ -47,7 +60,7 @@ struct MicrophoneMuteService {
             return .unavailable("Could not change microphone mute (\(result))")
         }
 
-        let updated = state()
+        let updated = state(device: device)
         guard updated != current else {
             return .unavailable("Mute change was not confirmed")
         }

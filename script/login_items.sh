@@ -8,7 +8,18 @@ USER_DOMAIN="gui/$(id -u)"
 for APP in "${APPS[@]}"; do
   LABEL="personal.harinaralasetty.${APP}.login"
   PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-  APP_PATH="/Applications/$APP.app"
+  APP_PATH="${MAC_APPS_INSTALL_DIR:-/Applications}/$APP.app"
+  if [[ -z "${MAC_APPS_INSTALL_DIR:-}" && -f "$PLIST" ]]; then
+    APP_PATH="$(/usr/bin/python3 - "$PLIST" <<'PY'
+import plistlib, sys
+with open(sys.argv[1], 'rb') as file:
+    job = plistlib.load(file)
+args = job.get('ProgramArguments', [])
+assert len(args) == 3 and args[:2] == ['/usr/bin/open', '-a']
+print(args[2])
+PY
+)"
+  fi
   case "$MODE" in
     enable)
       [[ -d "$APP_PATH" ]] || { echo "Missing $APP_PATH" >&2; exit 1; }

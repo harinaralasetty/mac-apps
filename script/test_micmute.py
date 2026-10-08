@@ -15,10 +15,14 @@ prefix='''import Foundation
  var available = true, hasMute = true, settable = true, writeApplies = true
  var readResult: Int32 = 0, writeResult: Int32 = 0, settableResult: Int32 = 0
  var muteValue: UInt32 = 0, writes = 0
+ var defaultSequence: [UInt32] = []
  func AudioObjectHasProperty(_ id: UInt32, _ address: UnsafeMutablePointer<AudioObjectPropertyAddress>) -> Bool { hasMute }
  func AudioObjectIsPropertySettable(_ id: UInt32, _ address: UnsafeMutablePointer<AudioObjectPropertyAddress>, _ value: UnsafeMutablePointer<DarwinBoolean>) -> Int32 { value.pointee = DarwinBoolean(settable); return settableResult }
  func AudioObjectGetPropertyData(_ id: UInt32, _ address: UnsafeMutablePointer<AudioObjectPropertyAddress>, _ qualifierSize: UInt32, _ qualifier: UnsafeRawPointer?, _ size: UnsafeMutablePointer<UInt32>, _ value: UnsafeMutableRawPointer) -> Int32 {
-  if address.pointee.mSelector == kAudioHardwarePropertyDefaultInputDevice { value.storeBytes(of: available ? UInt32(85) : UInt32(0), as: UInt32.self); return 0 }
+  if address.pointee.mSelector == kAudioHardwarePropertyDefaultInputDevice {
+   let next = defaultSequence.isEmpty ? (available ? UInt32(85) : UInt32(0)) : defaultSequence.removeFirst()
+   value.storeBytes(of: next, as: UInt32.self); return 0
+  }
   value.storeBytes(of: muteValue, as: UInt32.self); return readResult
  }
  func AudioObjectSetPropertyData(_ id: UInt32, _ address: UnsafeMutablePointer<AudioObjectPropertyAddress>, _ qualifierSize: UInt32, _ qualifier: UnsafeRawPointer?, _ size: UInt32, _ value: UnsafeRawPointer) -> Int32 {
@@ -26,7 +30,7 @@ prefix='''import Foundation
   if writeResult == 0 && writeApplies { muteValue = value.load(as: UInt32.self) }
   return writeResult
  }
- func reset() { available = true; hasMute = true; settable = true; writeApplies = true; readResult = 0; writeResult = 0; settableResult = 0; muteValue = 0; writes = 0 }
+ func reset() { available = true; hasMute = true; settable = true; writeApplies = true; readResult = 0; writeResult = 0; settableResult = 0; muteValue = 0; writes = 0; defaultSequence = [] }
  func check(_ name: String, _ condition: Bool) { if !condition { fatalError(name) }; print("PASS " + name) }
  let service = MicrophoneMuteService()
 '''
@@ -42,7 +46,8 @@ tests='''
  reset(); muteValue = 1; check("fake muted-to-live verified", service.toggle() == .live && writes == 1 && muteValue == 0)
  reset(); writeResult = -5; check("write failure reported", service.toggle() == .unavailable("Could not change microphone mute (-5)") && writes == 1 && muteValue == 0)
  reset(); writeApplies = false; check("unconfirmed write reported", service.toggle() == .unavailable("Mute change was not confirmed") && writes == 1 && muteValue == 0)
- print("11/11 fake-backend checks passed; no real audio APIs linked or invoked")
+ reset(); defaultSequence = [85, 86]; check("default input change rejects toggle without a write", service.toggle() == .unavailable("Default microphone changed; try again") && writes == 0)
+ print("12/12 fake-backend checks passed; no real audio APIs linked or invoked")
 '''
 import subprocess, tempfile
 with tempfile.TemporaryDirectory(prefix='micmute-tests-') as folder:
