@@ -1,10 +1,10 @@
 # Caffeine
 
-**Keep System Awake** is the main on/off control. While on, choose **Keep Display Awake** or **Allow Display Sleep**. Turning the main switch off releases both owned assertions. There is no display-only mode in the menu. Steam means this app owns an assertion; a plain cup means it owns none.
+Click the cup to open its menu. **Turn On** enables system idle-sleep prevention. **Keep System Awake** and **Keep Display Awake** can be toggled independently. **Turn Off** releases both. Steam means this app owns at least one assertion; a plain cup means it owns none.
 
 The menu reports when other apps or an external `caffeinate` process also hold sleep assertions. **Other Sleep Assertions** lists their owners and assertion details. Turning Caffeine off does not promise that the Mac will sleep if other owners still prevent it.
 
-Successful choices are stored in UserDefaults. The display choice is remembered for the next time you enable the system switch. Quit releases the app's own assertions while preserving those choices; relaunch restores the system switch and its chosen display option. A display preference by itself never acquires an assertion. Assertion IDs are never persisted. A failed action cannot claim success or erase the saved choice. There is one GUI instance per bundle identifier.
+Successful choices are stored independently in UserDefaults. Quit releases the app's own assertions while preserving those choices; relaunch restores them. Assertion IDs are never persisted. A failed action cannot claim success or erase the saved choice. There is one GUI instance per bundle identifier.
 
 Uses Apple's `IOPMAssertionCreateWithName`, `IOPMAssertionRelease` and `IOPMCopyAssertionsByProcess`. No child `caffeinate` process, process-wide kill command, networking change, lock-setting change or security-setting change is used. Idle-sleep prevention can be overridden by lid closure, low battery, forced sleep or other macOS/hardware conditions.
 
@@ -17,11 +17,11 @@ iconutil -c icns Caffeine/Resources/AppIcon.iconset -o Caffeine/Resources/AppIco
 
 ## Manual UI verification
 
-1. Enable Keep System Awake: steam, system checked; the remembered display option is applied.
-2. Choose Keep Display Awake: system and display assertions both present.
-3. Choose Allow Display Sleep: only the system assertion remains; steam stays visible.
-4. Disable Keep System Awake: plain cup, no owned assertions; display options disabled; external assertions remain.
-5. Enable system and choose either display option, Quit, relaunch: both choices return with one GUI process. Turn the system switch off when finished if that is the desired saved state.
-6. Compare the menu with `pmset -g assertions`. Confirm the Finder icon and off/on menu icons visually. Login registration is separate from an actual future login.
+1. Turn On: steam; system checked, display unchecked; one owned system assertion.
+2. Enable display: both checked; two owned assertions.
+3. Disable system: display alone remains checked and steam stays visible. Display assertions may also indirectly keep the system awake under macOS policy.
+4. Turn Off: plain cup, both unchecked, no owned assertions; external assertions remain.
+5. Enable display alone, Quit, relaunch: the display choice and assertion return with no duplicate GUI process. Finish with Turn Off if that is the desired saved state.
+6. Compare menu state with `pmset -g assertions`. Confirm the Finder application icon and off/on menu icons visually. Login registration is a separate check from an actual future login.
 
 Apple references: [power assertion types](https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes) and [display sleep assertions](https://developer.apple.com/documentation/iokit/1557127-iopmassertiondeclareuseractivity).

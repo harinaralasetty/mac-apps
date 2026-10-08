@@ -25,23 +25,12 @@ public final class AwakeController {
     }
 
     public func restorePreferences() throws {
-        if preferences?.isEnabled(.system) == true { try setSystemAwake(enabled: true) }
-    }
-
-    /// System is the master switch; the display choice applies only while it is on.
-    public func setSystemAwake(enabled: Bool) throws {
-        if enabled {
-            try set(.system, enabled: true)
-            try set(.display, enabled: preferences?.isEnabled(.display) == true, persist: false)
-        } else {
-            try turnOff(persist: false)
-            preferences?.set(.system, enabled: false)
+        var firstError: (any Error)?
+        for mode in AwakeMode.allCases where preferences?.isEnabled(mode) == true {
+            do { try set(mode, enabled: true, persist: false) }
+            catch { if firstError == nil { firstError = error } }
         }
-    }
-
-    public func setDisplayAwake(enabled: Bool) throws {
-        try set(.display, enabled: enabled && isEnabled(.system), persist: false)
-        preferences?.set(.display, enabled: enabled)
+        if let firstError { throw firstError }
     }
 
     public func set(_ mode: AwakeMode, enabled: Bool, persist: Bool = true) throws {

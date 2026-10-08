@@ -10,7 +10,6 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private var statusRow: NSMenuItem!
     private var systemRow: NSMenuItem!
     private var displayRow: NSMenuItem!
-    private var displaySleepRow: NSMenuItem!
     private var externalRow: NSMenuItem!
     private var externalSystemRow: NSMenuItem!
     private var externalDisplayRow: NSMenuItem!
@@ -21,12 +20,11 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         menu.delegate = self
         statusRow = add("Caffeine: normal mode")
         menu.addItem(.separator())
+        add("Turn On", action: #selector(turnOn), key: "a")
+        add("Turn Off", action: #selector(turnOff), key: "o")
+        menu.addItem(.separator())
         systemRow = add("Keep System Awake", action: #selector(toggleSystem))
-        displayRow = add("Keep Display Awake", action: #selector(keepDisplayAwake))
-        displaySleepRow = add("Allow Display Sleep", action: #selector(allowDisplaySleep))
-        displayRow.indentationLevel = 1
-        displaySleepRow.indentationLevel = 1
-        menu.autoenablesItems = false
+        displayRow = add("Keep Display Awake", action: #selector(toggleDisplay))
         menu.addItem(.separator())
         externalSystemRow = add("Other system assertions: none")
         externalDisplayRow = add("Other display assertions: none")
@@ -59,9 +57,6 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         statusRow.title = title
         systemRow.state = awake.isEnabled(.system) ? .on : .off
         displayRow.state = awake.isEnabled(.display) ? .on : .off
-        displaySleepRow.state = awake.isEnabled(.system) && !awake.isEnabled(.display) ? .on : .off
-        displayRow.isEnabled = awake.isEnabled(.system)
-        displaySleepRow.isEnabled = awake.isEnabled(.system)
         item.button?.image = CupIcon.make(steaming: awake.isActive)
         item.button?.toolTip = "\(title). System \(awake.isEnabled(.system) ? "awake" : "normal"), display \(awake.isEnabled(.display) ? "awake" : "normal")."
         item.button?.setAccessibilityLabel(title)
@@ -107,13 +102,14 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         }
         refresh()
     }
-    @objc private func toggleSystem() { perform { try awake.setSystemAwake(enabled: !awake.isEnabled(.system)) } }
-    @objc private func keepDisplayAwake() { perform { try awake.setDisplayAwake(enabled: true) } }
-    @objc private func allowDisplaySleep() { perform { try awake.setDisplayAwake(enabled: false) } }
+    @objc private func turnOn() { perform { try awake.set(.system, enabled: true) } }
+    @objc private func turnOff() { perform { try awake.turnOff() } }
+    @objc private func toggleSystem() { perform { try awake.set(.system, enabled: !awake.isEnabled(.system)) } }
+    @objc private func toggleDisplay() { perform { try awake.set(.display, enabled: !awake.isEnabled(.display)) } }
     @objc private func about() {
         let alert = NSAlert()
         alert.messageText = "Caffeine"
-        alert.informativeText = "Keep System Awake is the main switch. While it is on, choose Keep Display Awake or Allow Display Sleep. Turning the main switch off releases both assertions. Other apps may still prevent idle sleep.\n\nThe display choice is remembered for the next time you enable system mode. Relaunch restores the main switch and chosen display option. Quit releases only Caffeine's assertions. Screen locking and security settings remain in effect. Lid closure, low battery and forced sleep can override idle-sleep assertions."
+        alert.informativeText = "Steam means Caffeine holds a system or display idle-sleep assertion. Turn On keeps the system awake; the display control is separate. Turn Off and Quit release only Caffeine's assertions. Other apps may still prevent idle sleep.\n\nYour choices are restored after relaunch. Quit releases assertions without changing those choices. Login startup is managed by the project's login script. Screen locking and security settings remain in effect. Lid closure, low battery and forced sleep can override idle-sleep assertions."
         alert.runModal()
     }
     @objc private func quit() { NSApp.terminate(nil) }

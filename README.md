@@ -5,7 +5,7 @@ Native, dependency-free menu-bar utilities built with Swift and AppKit. Source i
 ## Use
 
 - **MicMute:** open `/Applications/MicMute.app`. Left-click the microphone to toggle the default input device's hardware mute; right-click for status and Quit. Some microphones do not expose a writable mute control. [Details](MicMute/README.md).
-- **Caffeine:** open `/Applications/Caffeine.app`. Steam indicates its own system or display assertion; a plain cup means its own assertions are off. The system switch has two display options: keep it awake or allow it to sleep. Saved choices return after relaunch. [Details](Caffeine/README.md).
+- **Caffeine:** open `/Applications/Caffeine.app`. Steam indicates its own system or display assertion; a plain cup means its own assertions are off. System and display controls are independent. Saved choices return after relaunch. [Details](Caffeine/README.md).
 
 ## Build and verify
 
@@ -18,7 +18,7 @@ Native, dependency-free menu-bar utilities built with Swift and AppKit. Source i
 
 Build output is in `dist/`. Local bundles are ad hoc signed. The default Run command launches the staging Caffeine bundle; it does not replace installed apps. `--build-only` never stops or launches apps. The script stops only instances running from its own staging path. Do not launch a staging MicMute alongside an installed instance.
 
-`test.sh` runs seven Caffeine logic tests, eleven MicMute fake-backend checks and a real IOKit assertion test. It explicitly locates the shipped Swift Testing macro plugin when required by Command Line Tools. Tests neither write microphone state nor stop external processes. Passing tests do not establish visual menu behavior or a real login test.
+`test.sh` runs six Caffeine logic tests, eleven MicMute fake-backend checks and a real IOKit assertion test. It explicitly locates the shipped Swift Testing macro plugin when required by Command Line Tools. Tests neither write microphone state nor stop external processes. Passing tests do not establish visual menu behavior or a real login test.
 
 ## Start at login
 
