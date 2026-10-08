@@ -67,17 +67,23 @@ private final class FakeBackend: AssertionBackend {
     defer { defaults.removePersistentDomain(forName: suite) }
     let preferences = AwakePreferences(defaults: defaults)
     let first = AwakeController(backend: FakeBackend(), preferences: preferences)
-    try first.set(.display, enabled: true)
+    try first.setDisplayAwake(enabled: true)
+    #expect(!first.isActive)
+    try first.setSystemAwake(enabled: true)
     try first.turnOff(persist: false)
     #expect(!first.isActive)
     let second = AwakeController(backend: FakeBackend(), preferences: preferences)
     try second.restorePreferences()
-    #expect(!second.isEnabled(.system))
+    #expect(second.isEnabled(.system))
     #expect(second.isEnabled(.display))
-    try second.turnOff()
+    try second.setSystemAwake(enabled: false)
+    #expect(preferences.isEnabled(.display))
     let third = AwakeController(backend: FakeBackend(), preferences: preferences)
     try third.restorePreferences()
     #expect(!third.isActive)
+    try third.setSystemAwake(enabled: true)
+    #expect(third.isEnabled(.display))
+    try third.setSystemAwake(enabled: false)
 }
 
 @MainActor @Test func failedActionDoesNotSaveIncorrectPreference() throws {
@@ -90,8 +96,29 @@ private final class FakeBackend: AssertionBackend {
     #expect(throws: FakeBackend.Failure.self) { try controller.set(.system, enabled: true) }
     #expect(!preferences.isEnabled(.system))
     preferences.set(.display, enabled: true)
+    preferences.set(.system, enabled: true)
     #expect(throws: FakeBackend.Failure.self) { try controller.restorePreferences() }
     #expect(preferences.isEnabled(.display))
+}
+
+@MainActor @Test func displayPreferenceNeverCreatesDisplayOnlyOperation() throws {
+    let suite = "CaffeineTests.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suite)!
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let preferences = AwakePreferences(defaults: defaults)
+    let backend = FakeBackend()
+    let controller = AwakeController(backend: backend, preferences: preferences)
+    try controller.setDisplayAwake(enabled: true)
+    #expect(backend.owned.isEmpty)
+    try controller.restorePreferences()
+    #expect(backend.owned.isEmpty)
+    try controller.setSystemAwake(enabled: true)
+    #expect(backend.owned.count == 2)
+    try controller.setDisplayAwake(enabled: false)
+    #expect(controller.isEnabled(.system))
+    #expect(!controller.isEnabled(.display))
+    try controller.setSystemAwake(enabled: false)
+    #expect(backend.owned.isEmpty)
 }
 
 @MainActor @Test func repeatedTogglesDoNotLeakOrReleaseForeignAssertions() throws {
