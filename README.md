@@ -1,56 +1,96 @@
-# Personal Mac apps
+# MicMute and Caffeine: macOS menu bar utilities
 
-Native, dependency-free menu-bar utilities built with Swift and AppKit. Source is organized into `MicMute/` and `Caffeine/`; one root Swift package and build script serve both apps. Apps require macOS 13+. Tests on newer Command Line Tools may require macOS 14+.
+Mute your default microphone or keep your Mac awake from the menu bar. **MicMute** controls a supported microphone's hardware mute; **Caffeine** prevents system or display idle sleep with independent controls. Both are native Swift and AppKit apps with no third-party package dependencies.
 
-## Use
+| App | Use it to | Main controls | Important limitation |
+| --- | --- | --- | --- |
+| [MicMute: microphone mute for Mac](MicMute/README.md) | Toggle the default input device's hardware mute and see its state | Left-click to toggle; right-click for status and Quit | The microphone must expose a writable mute control |
+| [Caffeine: keep your Mac awake](Caffeine/README.md) | Prevent system or display idle sleep and inspect other sleep assertions | Separate system/display switches; saved choices return after relaunch | Lid closure, low battery or forced sleep can override idle-sleep prevention |
 
-- **MicMute:** open `/Applications/MicMute.app`. Left-click the microphone to toggle the default input device's hardware mute; right-click for status and Quit. Some microphones do not expose a writable mute control. [Details](MicMute/README.md).
-- **Caffeine:** open `/Applications/Caffeine.app`. Steam indicates its own system or display assertion; a plain cup means its own assertions are off. System and display controls are independent. Saved choices return after relaunch. [Details](Caffeine/README.md).
+## Requirements
 
-## Install one app or a set
+- macOS 13 or later to run the apps.
+- A compatible Apple Swift 6 toolchain to build from source, supplied by Xcode or Xcode Command Line Tools. The [Swift package](Package.swift) declares tools version 6.0; use a current toolchain that supports the source syntax.
+- Git and Python 3 for the scripts. Tests on newer Command Line Tools may require macOS 14 or later.
+- Write access to the installation directory. The installer does not request administrator privileges.
 
-Install Apple's Xcode Command Line Tools (`xcode-select --install`) if needed, then clone this repository. These commands build from source, verify the bundles, install only the selected apps and open them:
+Install Apple's Command Line Tools with `xcode-select --install` if needed. Check the selected toolchain with `xcode-select -p` and `swift --version`.
+
+## Install from source
+
+Clone the repository, then run **one** installer command for the apps you want. The [installer](script/install.sh) builds, verifies, installs and opens the selected apps.
 
 ```sh
 git clone https://github.com/harinaralasetty/mac-apps.git
 cd mac-apps
-./script/install.sh MicMute                 # MicMute only
-./script/install.sh Caffeine                # Caffeine only
-./script/install.sh MicMute Caffeine        # Both; also the default with no app names
-./script/install.sh Caffeine --login        # Only Caffeine, plus start at login
-./script/install.sh --login                 # Both, plus start at login
+./script/install.sh MicMute
 ```
 
-Apps go to `/Applications` by default. For a user-only location, use `MAC_APPS_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine --login`. No administrator privilege is requested. If you relocate an app with existing startup registration, first run `./script/login_items.sh disable Caffeine`, then install it in the new location with `--login`.
+Other choices, run from the repository root:
 
-Re-running the installer skips replacement of byte-identical bundles. Before replacing an older version, it saves a ZIP under `recovery/install-backups/` and moves the old bundle to Trash; it quits only the selected installed app. Unselected apps and external sleep assertions are untouched. Hardware microphone testing is never part of installation.
+```sh
+./script/install.sh Caffeine          # Caffeine only
+./script/install.sh MicMute Caffeine  # Both; also the default with no app names
+./script/install.sh Caffeine --login  # Caffeine with startup at login
+./script/install.sh --login           # Both with startup at login
+```
+
+Apps are installed in `/Applications` by default. For a user-only location:
+
+```sh
+MAC_APPS_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine --login
+```
+
+Open the installed app from Finder or Launchpad. For example, with the default location:
+
+```sh
+open /Applications/MicMute.app
+open /Applications/Caffeine.app
+```
+
+Local bundles are ad hoc signed. The scripts verify bundle signatures; this is separate from Developer ID signing or notarization.
+
+### Updating and recovery
+
+Re-running the installer skips replacement of byte-identical bundles. Before replacing an older version, it saves a ZIP in `recovery/install-backups/` and moves the old bundle to your Trash. It quits only the selected installed app. Unselected apps and external sleep assertions are untouched; installation never runs a hardware microphone test.
+
+To restore a previous bundle, quit that app, keep the current bundle if needed, then restore the matching `.app` from Trash or extract its backup ZIP and place it in the installation directory. Reopen it from that location.
+
+If moving an app with existing startup registration, first disable its old registration, then reinstall at the new location with `--login`:
+
+```sh
+./script/login_items.sh disable Caffeine
+MAC_APPS_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine --login
+```
+
+## Start at login
+
+The [login startup script](script/login_items.sh) uses per-user LaunchAgents to open installed apps once in an Aqua login session. It has no KeepAlive loop, privileged helper or duplicate SMAppService registration.
+
+```sh
+./script/login_items.sh enable         # Both installed apps
+./script/login_items.sh status         # Read existing registration
+./script/login_items.sh disable Caffeine
+```
+
+Disabling startup does not quit the running app. The installer records the selected location. Registration checks do not prove that a future login will launch the app.
 
 ## Build and verify
+
+Run these commands from the repository root:
 
 ```sh
 ./script/build_and_run.sh Caffeine --build-only
 ./script/build_and_run.sh MicMute --build-only
 ./script/test.sh
-./script/login_items.sh status
 ```
 
-Build output is in `dist/`. Local bundles are ad hoc signed. The default Run command launches the staging Caffeine bundle; it does not replace installed apps. `--build-only` never stops or launches apps. The script stops only instances running from its own staging path. Do not launch a staging MicMute alongside an installed instance.
+The [build script](script/build_and_run.sh) writes bundles to `dist/`. `--build-only` does not stop or launch apps. Running the script without arguments builds and launches the staging Caffeine bundle; it does not replace installed apps. Run mode stops only instances at its own staging path. Avoid launching staging MicMute alongside an installed copy.
 
-`test.sh` runs six Caffeine logic tests, twelve MicMute fake-backend checks and a real IOKit assertion test. It explicitly locates the shipped Swift Testing macro plugin when required by Command Line Tools. Tests neither write microphone state nor stop external processes. Passing tests do not establish visual menu behavior or a real login test.
+The [test script](script/test.sh) runs six Caffeine logic tests, twelve MicMute fake-backend checks and a real IOKit assertion self-test. It locates the shipped Swift Testing macro plugin when required by Command Line Tools. Tests do not write microphone state or stop external processes. Passing tests does not establish visual menu behavior, compatibility with every microphone or successful startup at a real login.
 
-## Start at login
+See [MicMute behavior and optional hardware verification](MicMute/README.md#verify-microphone-behavior) and [Caffeine manual UI verification](Caffeine/README.md#verify-the-menu-and-sleep-assertions) for checks beyond the automated suite.
 
-```sh
-./script/login_items.sh enable
-./script/login_items.sh status
-# Optional: disable one startup registration without quitting the app
-./script/login_items.sh disable Caffeine
-```
+## Support and maintenance
 
-Supported per-user LaunchAgents open the installed apps once in an Aqua login session. There is no KeepAlive loop, privileged helper or duplicated SMAppService registration. Registration can be verified without logging out. The installer records the selected location; the status command reads existing registration without changing it.
-
-## Recovery and publication
-
-MicMute's original installed bundle is archived in `recovery/`, and its original source folder is retained. The adopted implementation includes one small fix that keeps each mute operation on the same microphone when the default input changes. The original source repository, and both earlier combined-project repositories, had no commits at adoption; no existing commit history was rewritten. The canonical project is this directory. Recovery material and machine-specific evidence are excluded from Git, along with build output, caches and credential files.
-
-Repository: [harinaralasetty/mac-apps](https://github.com/harinaralasetty/mac-apps). Publication uses the verified personal GitHub connector; the machine's CLI work-account authentication is unchanged.
+Maintained by [Hari Naralasetty](https://github.com/harinaralasetty). Report reproducible problems through [mac-apps issues](https://github.com/harinaralasetty/mac-apps/issues), including the app, macOS version, Swift version for build failures, and relevant error text.

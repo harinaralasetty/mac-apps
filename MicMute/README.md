@@ -1,16 +1,44 @@
-# MicMute
+# MicMute: microphone mute from the macOS menu bar
 
-The existing implementation and icons were adopted, preserving normal microphone behavior and settings. A small bug fix pins each toggle to one input device and refuses the operation if the default microphone changes before the write. The original installed bundle is archived under the root `recovery/` directory before replacement. Original source is retained at `~/Documents/Codex/2026-09-29/build-macos-apps-plugin-build-macos`.
+**MicMute** lets you toggle your Mac's default input device's hardware mute with one click and see whether that microphone is live, muted or unavailable. It is a native Swift and AppKit utility for macOS 13 or later.
 
-Click the status icon to toggle the default input device's hardware mute. Right-click to view its current state and Quit. A one-second read-only refresh follows external changes. Some devices lack a writable hardware mute control, in which case the app reports the limitation.
+## Install MicMute
 
-Build using the root script. Safe logic checks run with `python3 script/test_micmute.py`: the current source is compiled against fake audio APIs, so it cannot touch real audio. Read the actual device state without changing it with:
+Follow the [source installation requirements](../README.md#requirements), then run this command from the repository root:
+
+```sh
+./script/install.sh MicMute
+```
+
+To start MicMute at login, use `./script/install.sh MicMute --login`. See [installation locations, updates and recovery](../README.md#install-from-source) for user-only installation and rollback options.
+
+## Mute and check your microphone
+
+- **Left-click** the microphone icon to toggle the default input device's hardware mute.
+- **Right-click** to view its current state and Quit.
+- A one-second read-only refresh updates the icon after external changes.
+
+MicMute requires a microphone with a writable Core Audio mute control. If the device has no control, cannot be read or cannot be changed, the app reports the limitation. It verifies the mute state after a write and reports unconfirmed changes.
+
+Each toggle stays on one input device. If the default microphone changes before the write check, MicMute refuses the operation and asks you to try again. The state shown is the device's hardware mute state; it does not establish the mute state of every calling or recording app.
+
+## Verify microphone behavior
+
+The [safe logic checks](../script/test_micmute.py) compile the service against fake audio APIs and cannot touch real audio:
+
+```sh
+python3 script/test_micmute.py
+```
+
+Read the actual device state without changing it:
 
 ```sh
 swift MicMute/Tests/ReadAudioState.swift
 ```
 
-The optional hardware check performs a real toggle and restores the original device's mute state, even after a failed check. It refuses to write when an input-capable audio device is active or unreadable. Run it only when no call or recording is in progress:
+### Optional hardware toggle check
+
+The [hardware check](Tests/HardwareToggleCheck.swift) performs a real toggle and attempts to restore the original device's mute state, including after a failed check. It refuses to write when an input-capable audio device is active or unreadable. Run it only when no call or recording is in progress:
 
 ```sh
 swiftc MicMute/Sources/Services/MicrophoneMuteService.swift \
@@ -18,4 +46,6 @@ swiftc MicMute/Sources/Services/MicrophoneMuteService.swift \
 /tmp/micmute-hardware-check --confirm-idle
 ```
 
-A skipped check exits with status 2; a passed check exits with status 0. Normal tests never change hardware state. Visual menu checks and a future login test remain separate from automated tests.
+A skipped check exits with status 2; a passed check exits with status 0. Review any reported restoration failure before resuming microphone use. Normal tests never change hardware state. Visual menu checks and an actual login test remain separate from automated tests.
+
+See [Caffeine's independent system and display sleep controls](../Caffeine/README.md) for the other utility in this repository.
