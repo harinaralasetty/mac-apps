@@ -1,5 +1,7 @@
 # Caffeine for macOS
 
+<img src="Caffeine/Resources/AppIcon.png" alt="Caffeine app logo: a steaming white coffee cup on a warm copper background" width="160" height="160">
+
 A native menu-bar utility to keep your Mac awake, follow `caffeinate` CLI sessions, and earn twelve coffee awards. Caffeine uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.3 (build 4)**.
 
 - Control system and display idle sleep independently.
@@ -20,15 +22,15 @@ Check your toolchain with `xcode-select -p` and `swift --version`. Local bundles
 ## Install from source
 
 ```sh
-git clone https://github.com/harinaralasetty/mac-apps.git
-cd mac-apps
+git clone https://github.com/harinaralasetty/caffeine.git
+cd caffeine
 ./script/install.sh Caffeine
 ```
 
-The existing repository URL remains `mac-apps`; current contents build Caffeine only. The installer builds, verifies, installs into `/Applications` and opens Caffeine. It needs write access to the destination and does not elevate privileges. For a user installation:
+This checkout builds Caffeine only. The installer builds, verifies, installs into `/Applications` and opens Caffeine. It needs write access to the destination and does not elevate privileges. For a user installation:
 
 ```sh
-MAC_APPS_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine
+CAFFEINE_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine
 open "$HOME/Applications/Caffeine.app"
 ```
 
@@ -101,4 +103,4 @@ See the [architecture and contribution guide](ARCHITECTURE.md) for the file map,
 
 The app has no network client, account, telemetry service or cloud sync code. It reads local power-assertion metadata and saves app choices, earned IDs and CLI interval claims in local UserDefaults. Screenshots in this repository contain app UI only. Build/install scripts use local tools; cloning and pushing Git contact GitHub.
 
-Maintained by [Hari Naralasetty](https://github.com/harinaralasetty). Report reproducible issues through [Caffeine repository issues](https://github.com/harinaralasetty/mac-apps/issues), including macOS version, build/toolchain version, relevant errors and whether app-owned or CLI activity was involved. Review screenshots/logs for private information before posting.
+Maintained by [Hari Naralasetty](https://github.com/harinaralasetty). Report reproducible issues through [Caffeine repository issues](https://github.com/harinaralasetty/caffeine/issues), including macOS version, build/toolchain version, relevant errors and whether app-owned or CLI activity was involved. Review screenshots/logs for private information before posting.

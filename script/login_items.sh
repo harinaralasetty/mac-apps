@@ -9,8 +9,8 @@ USER_DOMAIN="gui/$(id -u)"
 for APP in "${APPS[@]}"; do
   LABEL="personal.harinaralasetty.${APP}.login"
   PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-  APP_PATH="${MAC_APPS_INSTALL_DIR:-/Applications}/$APP.app"
-  if [[ -z "${MAC_APPS_INSTALL_DIR:-}" && -f "$PLIST" ]]; then
+  APP_PATH="${CAFFEINE_INSTALL_DIR:-/Applications}/$APP.app"
+  if [[ -z "${CAFFEINE_INSTALL_DIR:-}" && -f "$PLIST" ]]; then
     APP_PATH="$(/usr/bin/python3 - "$PLIST" <<'PY'
 import plistlib, sys
 with open(sys.argv[1], 'rb') as file:

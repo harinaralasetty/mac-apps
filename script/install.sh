@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-INSTALL_DIR="${MAC_APPS_INSTALL_DIR:-/Applications}"
-[[ "$INSTALL_DIR" == /* ]] || { echo 'MAC_APPS_INSTALL_DIR must be an absolute path.' >&2; exit 2; }
+INSTALL_DIR="${CAFFEINE_INSTALL_DIR:-/Applications}"
+[[ "$INSTALL_DIR" == /* ]] || { echo 'CAFFEINE_INSTALL_DIR must be an absolute path.' >&2; exit 2; }
 LOGIN=false
 APPS=()
 for ARG in "$@"; do
@@ -15,7 +15,7 @@ for ARG in "$@"; do
 done
 if [[ ${#APPS[@]} -eq 0 ]]; then APPS=(Caffeine); fi
 mkdir -p "$INSTALL_DIR"
-[[ -w "$INSTALL_DIR" ]] || { echo "Cannot write $INSTALL_DIR. Choose MAC_APPS_INSTALL_DIR=\"\$HOME/Applications\"." >&2; exit 1; }
+[[ -w "$INSTALL_DIR" ]] || { echo "Cannot write $INSTALL_DIR. Choose CAFFEINE_INSTALL_DIR=\"\$HOME/Applications\"." >&2; exit 1; }
 for APP in "${APPS[@]}"; do
   "$ROOT_DIR/script/build_and_run.sh" "$APP" --build-only
   /usr/bin/python3 - "$ROOT_DIR" "$INSTALL_DIR" "$APP" <<'PY'
@@ -81,6 +81,6 @@ for _ in range(30):
 else: raise SystemExit('Installed successfully, but no process launched from '+str(target)+'. Quit any other copy before reopening.')
 PY
   if [[ "$LOGIN" == true ]]; then
-    MAC_APPS_INSTALL_DIR="$INSTALL_DIR" "$ROOT_DIR/script/login_items.sh" enable "$APP"
+    CAFFEINE_INSTALL_DIR="$INSTALL_DIR" "$ROOT_DIR/script/login_items.sh" enable "$APP"
   fi
 done
