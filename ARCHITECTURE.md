@@ -11,6 +11,7 @@ Start with the [README](README.md) for product behavior and supported commands. 
 | [AwardsWindowController.swift](CaffeinateUI/Sources/Support/AwardsWindowController.swift) | Retained native window, SwiftUI cards, cached grayscale locked images |
 | [CupIcon.swift](CaffeinateUI/Sources/Support/CupIcon.swift) | Steaming/plain artwork for app or qualifying CLI activity |
 | [AwakeController.swift](CaffeinateUI/Core/AwakeController.swift) | Owned IDs, independent controls, filtered external CLI observations and interval reconciliation |
+| [UnifiedOff.swift](CaffeinateUI/Core/UnifiedOff.swift) | Shared menu state, explicit Off coordination, narrow process identity/workload checks and graceful CLI stop |
 | [PowerAssertions.swift](CaffeinateUI/Core/PowerAssertions.swift) | IOKit create/release, active assertion snapshots, power-source classification, CLI identity/start metadata |
 | [AwakeSession.swift](CaffeinateUI/Core/AwakeSession.swift) | Catalog validation, elapsed progress, threshold unlocks and earned-ID persistence |
 | [CLIActivityClock.swift](CaffeinateUI/Core/CLIActivityClock.swift) | Monotonic current CLI interval, recovered start, overlap continuity and persisted claims |
@@ -22,8 +23,9 @@ Start with the [README](README.md) for product behavior and supported commands. 
 
 ## Invariants to preserve
 
-- `AwakeController` releases only IDs returned by its backend. External CLI processes remain untouched.
+- `AwakeController.turnOff` releases only IDs returned by its backend and remains the Quit/test-cleanup operation. Explicit `turnOffAll` additionally stops verified user-owned standalone Terminal CLI processes, never shells, process groups, wrapped commands, watched jobs or other applications. Unknown detached processes are protected unless their exact PID and birth have explicit authorization.
 - `isActive` means app-owned assertions; `isSessionActive` additionally includes qualifying CLI assertions. Control checkmarks describe owned state.
+- Menu heading, steam and On/Off availability use the same `AwakeMenuState`: active app or CLI means On, On disabled and Off enabled; no qualifying activity means Off, On enabled and Off disabled. Failed/protected stops retain truthful active state and report affected PIDs. Independent system/display toggles still describe app ownership.
 - Qualifying CLI assertions use the canonical caffeinate name and active system/display types. AC-only `PreventSystemSleep` is filtered on battery.
 - Historical CLI progress is an interval, not an additive balance: `includeCLIInterval` extends coverage using `min(startedAt, now - seconds)`. Polling, multiple processes and relaunch must never sum the same interval twice.
 - CLI recovery uses current `GlobalUniqueID` plus `AssertStartWhen`. Saved interval starts are considered only when that exact assertion is active. Observed overlaps can retain earlier coverage. Missing/invalid dates and clock discontinuities remain conservative.

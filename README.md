@@ -4,7 +4,7 @@
 
 **Keep your Mac awake. Keep your agents running.**
 
-Built for the agent era: Hari made Caffeinate UI for long-running local coding agents, builds and terminal workflows. It manages macOS idle-sleep assertions and shows active `caffeinate` sessions, with twelve coffee awards along the way. Caffeinate UI uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.6 (build 7)**.
+Built for the agent era: Hari made Caffeinate UI for long-running local coding agents, builds and terminal workflows. It manages macOS idle-sleep assertions and shows active `caffeinate` sessions, with twelve coffee awards along the way. Caffeinate UI uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.7 (build 8)**.
 
 - Control system and display idle sleep independently.
 - See a session timer for app-owned and qualifying CLI assertions.
@@ -13,7 +13,7 @@ Built for the agent era: Hari made Caffeinate UI for long-running local coding a
 
 ![Actual Caffeinate UI Awards window showing five full-colour earned badges and a grey locked three-day milestone](docs/screenshots/awards.jpg)
 
-Installed 1.5 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 16 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown. Source and installed app are now 1.6; fresh native menu screenshots are pending visual verification.
+Installed 1.5 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 16 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown. Source and installed app are now 1.7; fresh native menu screenshots are pending visual verification.
 
 ## Requirements
 
@@ -52,15 +52,15 @@ Disabling startup does not quit Caffeinate UI. When moving installations, disabl
 
 | Control | Behavior |
 | --- | --- |
-| Turn On | Enables system idle-sleep prevention |
+| Turn On | Starts system idle-sleep prevention; disabled while app or CLI activity is already On |
 | Keep System Awake | Toggles the app's system assertion |
 | Keep Display Awake | Toggles the app's display assertion independently |
-| Turn Off Caffeinate UI | Releases only Caffeinate UI-owned assertions |
+| Turn Off | Releases app assertions and stops verified standalone Terminal caffeinate sessions; disabled once fully Off |
 | CLI session / Awake streak | Shows current elapsed time |
 | Show Awards… | Opens or raises one retained native Awards window |
 | Other Sleep Assertions | Explains other active system/display assertions |
 
-A steaming cup means Caffeinate UI or qualifying CLI activity is active. A plain cup means neither is active. App choices persist and restore on launch; assertion IDs are always acquired afresh. Turning Caffeinate UI off never stops external CLI processes. When a CLI session remains active, the menu says “Off — CLI caffeinate active” and steam stays visible. System and display controls remain independent. Lid closure, low battery, forced sleep and macOS power policy can override idle-sleep prevention. Caffeinate UI does not supervise or restart agents, prevent crashes or network outages, or guarantee uninterrupted jobs. Keeping the system or display awake can increase battery use; enable only the controls your task needs.
+A steaming cup and On heading both mean app or qualifying CLI activity is active. A plain cup and Off heading mean neither is active. Turn Off stops standalone `/usr/bin/caffeinate` processes owned by your user and attached to an interactive shell, after rechecking executable, owner, birth time, arguments and children. Wrapped commands, `-w` job monitors, processes with children, other application-owned processes and unverified detached processes are preserved. Failures identify the affected PID; remaining qualifying activity keeps steam and On visible. Detached processes require explicit authorization for their exact PID and birth time because their original owner cannot be recovered. No shell, process group or workload is terminated, and no force kill is used. Once all qualifying activity ends, the timer resets and earned awards remain saved. Quit releases only app assertions. App choices persist and restore on launch; assertion IDs are acquired afresh. System and display toggles remain independent. Other apps may still prevent idle sleep when Caffeinate UI is Off. Lid closure, low battery, forced sleep and macOS power policy can override idle-sleep prevention. Caffeinate UI does not supervise or restart agents, prevent crashes or network outages, or guarantee uninterrupted jobs. Keeping the system or display awake can increase battery use; enable only the controls your task needs.
 
 ## Timer and awards
 
@@ -101,7 +101,7 @@ The collection above renders the actual PNG assets with separate catalog labels.
 python3 script/audit_source.py
 ```
 
-The build creates `"dist/Caffeinate UI.app"`. Build-only does not launch or quit apps. The test script runs 22 Swift tests and a packaged self-test: real assertion acquisition/release, twenty ownership cycles, image decoding, simulated clocks, persistence, CLI overlap/restart and real test-owned CLI expiry. Tests use isolated defaults and never advance real award storage or terminate existing CLI processes.
+The build creates `"dist/Caffeinate UI.app"`. Build-only does not launch or quit apps. The full test script runs 30 Swift tests and a packaged self-test: real assertion acquisition/release, twenty ownership cycles, image decoding, simulated clocks, persistence, CLI overlap/restart, unified menu state and safe test-owned CLI termination. `./script/test.sh --no-display` runs 29 tests and skips real display assertions and the packaged display self-test. Tests use isolated defaults and never advance real award storage or terminate existing CLI processes.
 
 See the [architecture and contribution guide](ARCHITECTURE.md) for the file map, invariants and diagnostic commands. Real system sleep, login-cycle and AC/battery switching remain manual checks; do them only when ongoing work can safely pause. Automated tests do not certify every macOS version or hardware configuration.
 

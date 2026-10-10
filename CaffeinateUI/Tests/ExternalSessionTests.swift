@@ -9,7 +9,8 @@ import Testing
 private func cli(_ pid: Int32 = 100, type: String = "PreventUserIdleSystemSleep", name: String = "caffeinate command-line tool") -> SleepAssertion {
     SleepAssertion(pid: pid, id: UInt32(pid), type: type, name: name)
 }
-@MainActor @Test func steamTracksAppAndCLIIndependentlyAcrossOffAndReopen() throws {
+// turnOff is app-only cleanup (also used by Quit); menu Off calls turnOffAll.
+@MainActor @Test func steamTracksAppAndCLIIndependentlyAcrossOwnedCleanupAndReopen() throws {
     let controller = AwakeController(backend: TestBackend())
     #expect(!controller.isSessionActive)
     try controller.set(.system, enabled: true)

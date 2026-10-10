@@ -10,7 +10,8 @@ public protocol AssertionBackend {
     func release(_ id: UInt32) throws
 }
 
-/// Holds only IDs created by this controller. No process signals or global changes.
+/// Owns only IDs created by this controller. Explicit unified Off delegates safe
+/// standalone CLI signaling to a separate process backend; Quit remains app-only.
 @MainActor
 public final class AwakeController {
     private let backend: any AssertionBackend

@@ -17,6 +17,9 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private var externalSystemRow: NSMenuItem!
     private var externalDisplayRow: NSMenuItem!
     private var lastError: String?
+    private var onRow: NSMenuItem!
+    private var offRow: NSMenuItem!
+    private var changing = false
 
     override init() {
         var catalogError: String?
@@ -34,15 +37,17 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         super.init()
         lastError = catalogError
         menu.delegate = self
+        menu.autoenablesItems = false
         statusRow = add("Caffeinate UI: normal mode")
         streakRow = add("Awake streak: 00:00:00")
         streakRow.toolTip = "One uninterrupted session from Caffeinate UI or CLI caffeinate. No qualifying assertions, quit/relaunch or system sleep resets it. Display sleep and screen lock do not."
         awardsWindow = AwardsWindowController(awards: session.awards)
         awardsRow = add("Show Awards…", action: #selector(showAwards))
         menu.addItem(.separator())
-        add("Turn On", action: #selector(turnOn), key: "a")
-        let off = add("Turn Off Caffeinate UI", action: #selector(turnOff), key: "o")
-        off.toolTip = "Releases this app's system and display assertions. Your CLI caffeinate sessions keep running."
+        onRow = add("Turn On", action: #selector(turnOn), key: "a")
+        onRow.toolTip = "Starts system wake prevention. The display control remains independent."
+        offRow = add("Turn Off", action: #selector(turnOff), key: "o")
+        offRow.toolTip = "Releases app assertions and stops your standalone Terminal caffeinate sessions. Wrapped commands, watched jobs and other apps are preserved."
         menu.addItem(.separator())
         systemRow = add("Keep System Awake", action: #selector(toggleSystem))
         displayRow = add("Keep Display Awake", action: #selector(toggleDisplay))
@@ -96,9 +101,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func systemDidWake() { awake.session?.systemDidWake(active: awake.isSessionActive); refresh() }
 
     static func statusTitle(appActive: Bool, cliActive: Bool, otherActive: Bool = false) -> String {
-        if cliActive { return "Caffeinate UI: \(appActive ? "On" : "Off") — CLI caffeinate active" }
-        if appActive { return "Caffeinate UI: On" }
-        return otherActive ? "Caffeinate UI: Off — other apps prevent idle sleep" : "Caffeinate UI: Off"
+        AwakeMenuState(appActive: appActive, cliActive: cliActive, otherActive: otherActive).title
     }
 
     private func refresh() {
@@ -110,14 +113,18 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             awake.observeExternalAssertions(entries, onACPower: snapshot.onACPower)
         } catch {
             snapshotError = true
-            awake.observeExternalAssertions([])
         }
         refreshSession()
         let cliActive = !awake.externalCaffeinate.isEmpty
-        statusRow.title = Self.statusTitle(appActive: awake.isActive, cliActive: cliActive)
+        let controls = AwakeMenuState(appActive: awake.isActive, cliActive: cliActive)
+        statusRow.title = controls.title
+        onRow.isEnabled = controls.canTurnOn && !changing
+        offRow.isEnabled = controls.canTurnOff && !changing
+        systemRow.isEnabled = !changing
+        displayRow.isEnabled = !changing
         systemRow.state = awake.isEnabled(.system) ? .on : .off
         displayRow.state = awake.isEnabled(.display) ? .on : .off
-        item.button?.image = CupIcon.make(steaming: awake.isSessionActive)
+        item.button?.image = CupIcon.make(steaming: controls.steaming)
         let details = NSMenu()
         if !snapshotError {
             let system = entries.filter(\.keepsSystemAwake).count
@@ -142,11 +149,14 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         if let lastError {
             let row = NSMenuItem(title: "Last action failed", action: nil, keyEquivalent: "")
             row.toolTip = lastError; details.addItem(row)
+            statusRow.title += " — last action failed"
         }
+        if snapshotError { statusRow.title = "Caffeinate UI: sleep status unavailable" }
+        if changing { statusRow.title = "Caffeinate UI: turning off…" }
         externalRow.submenu = details
         externalRow.isEnabled = true
-        let steamHelp = cliActive ? " Steam remains while CLI caffeinate is active; Turn Off Caffeinate UI releases only this app's assertions." : ""
-        item.button?.toolTip = "\(statusRow.title). App controls: system \(awake.isEnabled(.system) ? "on" : "off"), display \(awake.isEnabled(.display) ? "on" : "off").\(steamHelp)"
+        let steamHelp = cliActive ? " Turn Off also stops verified standalone CLI sessions; protected workloads remain active and are reported." : ""
+        item.button?.toolTip = "\(statusRow.title). App controls: system \(awake.isEnabled(.system) ? "on" : "off"), display \(awake.isEnabled(.display) ? "on" : "off").\(steamHelp)\(lastError.map { " " + $0 } ?? "")"
         item.button?.setAccessibilityLabel(statusRow.title)
     }
 
@@ -163,13 +173,23 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
     @objc func showAwards() { refresh(); awardsWindow.show() }
     @objc private func turnOn() { perform { try awake.set(.system, enabled: true) } }
-    @objc private func turnOff() { perform { try awake.turnOff() } }
+    @objc private func turnOff() {
+        guard !changing else { return }
+        changing = true
+        refresh()
+        Task { @MainActor in
+            do { try await awake.turnOffAll(using: StandaloneCLIStopper()); lastError = nil }
+            catch { lastError = error.localizedDescription }
+            changing = false
+            refresh()
+        }
+    }
     @objc private func toggleSystem() { perform { try awake.set(.system, enabled: !awake.isEnabled(.system)) } }
     @objc private func toggleDisplay() { perform { try awake.set(.display, enabled: !awake.isEnabled(.display)) } }
     @objc private func about() {
         let alert = NSAlert()
         alert.messageText = "Caffeinate UI"
-        alert.informativeText = "Steam means Caffeinate UI or CLI caffeinate holds a system or display sleep assertion. Turn On keeps the system awake; the display control is separate. Turn Off and Quit release only Caffeinate UI's assertions. Other apps may still prevent idle sleep.\n\nAwake streak measures one uninterrupted session while either control or a CLI caffeinate system/display assertion is active. No qualifying assertions, App-only quit/relaunch or system sleep resets progress. A current CLI session recovers earlier elapsed time, including possible sleep; overlaps count once. Display sleep and locking do not reset progress. Earned awards stay saved locally.\n\nYour choices are restored after relaunch. Quit releases assertions without changing those choices. Login startup is managed by the project's login script. Screen locking and security settings remain in effect. Lid closure, low battery and forced sleep can override idle-sleep assertions."
+        alert.informativeText = "Steam and On mean Caffeinate UI or CLI caffeinate holds a system or display sleep assertion. Turn On starts system wake prevention; the display control is separate. Turn Off releases app assertions and stops your verified standalone CLI caffeinate sessions. Wrapped commands, watched jobs and other applications are preserved; any session that cannot safely stop is reported and keeps steam visible. Quit releases only app assertions. Other apps may still prevent idle sleep.\n\nAwake streak measures one uninterrupted session while either control or a CLI caffeinate system/display assertion is active. No qualifying assertions, app-only quit/relaunch or system sleep resets progress. A current CLI session recovers earlier elapsed time, including possible sleep; overlaps count once. Display sleep and locking do not reset progress. Earned awards stay saved locally.\n\nYour choices are restored after relaunch. Quit releases assertions without changing those choices. Login startup is managed by the project's login script. Screen locking and security settings remain in effect. Lid closure, low battery and forced sleep can override idle-sleep assertions."
         alert.runModal()
     }
     @objc private func quit() { NSApp.terminate(nil) }

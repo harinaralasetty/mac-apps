@@ -84,7 +84,7 @@ enum RuntimeCheck {
         try verify(awards.count == 12, "all 12 awards packaged")
         try verify(StatusBarController.statusTitle(appActive: false, cliActive: false) == "Caffeinate UI: Off", "app-only Off status")
         try verify(StatusBarController.statusTitle(appActive: true, cliActive: false) == "Caffeinate UI: On", "app-only On status")
-        try verify(StatusBarController.statusTitle(appActive: false, cliActive: true) == "Caffeinate UI: Off — CLI caffeinate active", "CLI steam explicitly identifies app Off")
+        try verify(StatusBarController.statusTitle(appActive: false, cliActive: true) == "Caffeinate UI: On — CLI caffeinate active", "CLI steam and heading both report On")
         try verify(StatusBarController.statusTitle(appActive: true, cliActive: true) == "Caffeinate UI: On — CLI caffeinate active", "mixed app and CLI status")
         for award in awards {
             let image = NSImage(contentsOf: resources.appendingPathComponent("Badges/\(award.image)"))
@@ -124,7 +124,7 @@ enum RuntimeCheck {
         try controller.set(.system, enabled: true)
         try controller.turnOff()
         try verify(!controller.isActive && controller.isSessionActive == cliActive,
-                   "Turn Off releases app assertion immediately; steam retains only qualifying CLI activity")
+                   "app-only cleanup releases owned assertions; qualifying CLI activity remains")
         controller.observeExternalAssertions([])
         try verify(!controller.isSessionActive, "steam clears when isolated CLI snapshot ends")
         for assertion in external {
