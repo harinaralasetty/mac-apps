@@ -14,6 +14,8 @@ if [[ "$APP_NAME" == MicMute ]]; then
   cp -X "$ROOT_DIR/MicMute/Resources/"{AppIcon.icns,MicLive.png,MicMuted.png,MicUnavailable.png} "$APP_BUNDLE/Contents/Resources/"
 else
   cp -X "$ROOT_DIR/Caffeine/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/"
+  mkdir -p "$APP_BUNDLE/Contents/Resources/Badges"
+  cp -X "$ROOT_DIR/Caffeine/Resources/Badges/catalog.json" "$ROOT_DIR/Caffeine/Resources/Badges/"*.png "$APP_BUNDLE/Contents/Resources/Badges/"
 fi
 cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

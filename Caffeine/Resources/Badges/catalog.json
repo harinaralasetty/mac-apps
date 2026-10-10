@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "time_basis": "one uninterrupted Caffeine-owned awake streak",
+  "day_seconds": 86400,
+  "awards": [
+    {
+      "id": "first-sip",
+      "title": "First Sip",
+      "threshold_seconds": 300,
+      "threshold_label": "5 minutes",
+      "rank": 1,
+      "image": "first-sip.png"
+    },
+    {
+      "id": "espresso-yourself",
+      "title": "Espresso Yourself",
+      "threshold_seconds": 3600,
+      "threshold_label": "1 hour",
+      "rank": 2,
+      "image": "espresso-yourself.png"
+    },
+    {
+      "id": "just-one-more-cup",
+      "title": "Just One More Cup",
+      "threshold_seconds": 14400,
+      "threshold_label": "4 hours",
+      "rank": 3,
+      "image": "just-one-more-cup.png"
+    },
+    {
+      "id": "the-daily-grind",
+      "title": "The Daily Grind",
+      "threshold_seconds": 28800,
+      "threshold_label": "8 hours",
+      "rank": 4,
+      "image": "the-daily-grind.png"
+    },
+    {
+      "id": "certified-all-nighter",
+      "title": "Certified All-Nighter",
+      "threshold_seconds": 86400,
+      "threshold_label": "24 hours",
+      "rank": 5,
+      "image": "certified-all-nighter.png"
+    },
+    {
+      "id": "decaf-is-a-myth",
+      "title": "Decaf Is a Myth",
+      "threshold_seconds": 259200,
+      "threshold_label": "3 days",
+      "rank": 6,
+      "image": "decaf-is-a-myth.png"
+    },
+    {
+      "id": "sleep-is-a-rumor",
+      "title": "Sleep Is a Rumor",
+      "threshold_seconds": 604800,
+      "threshold_label": "7 days",
+      "rank": 7,
+      "image": "sleep-is-a-rumor.png"
+    },
+    {
+      "id": "bean-there-done-that",
+      "title": "Bean There, Done That",
+      "threshold_seconds": 1209600,
+      "threshold_label": "14 days",
+      "rank": 8,
+      "image": "bean-there-done-that.png"
+    },
+    {
+      "id": "your-mac-is-legally-a-cafe",
+      "title": "Your Mac Is Legally a Café",
+      "threshold_seconds": 2592000,
+      "threshold_label": "30 days",
+      "rank": 9,
+      "image": "your-mac-is-legally-a-cafe.png"
+    },
+    {
+      "id": "roast-level-critical",
+      "title": "Roast Level: Critical",
+      "threshold_seconds": 5184000,
+      "threshold_label": "60 days",
+      "rank": 10,
+      "image": "roast-level-critical.png"
+    },
+    {
+      "id": "legally-an-espresso-machine",
+      "title": "Legally an Espresso Machine",
+      "threshold_seconds": 7776000,
+      "threshold_label": "90 days",
+      "rank": 11,
+      "image": "legally-an-espresso-machine.png"
+    },
+    {
+      "id": "caffeine-overdose",
+      "title": "Caffeine Overdose",
+      "threshold_seconds": 31536000,
+      "threshold_label": "365 days",
+      "rank": 12,
+      "image": "caffeine-overdose.png"
+    }
+  ]
+}

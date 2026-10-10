@@ -15,13 +15,15 @@ public protocol AssertionBackend {
 public final class AwakeController {
     private let backend: any AssertionBackend
     private let preferences: AwakePreferences?
+    public let session: AwakeSession?
     public private(set) var assertions: [AwakeMode: UInt32] = [:]
     public var isActive: Bool { !assertions.isEmpty }
     public func isEnabled(_ mode: AwakeMode) -> Bool { assertions[mode] != nil }
 
-    public init(backend: any AssertionBackend, preferences: AwakePreferences? = nil) {
+    public init(backend: any AssertionBackend, preferences: AwakePreferences? = nil, session: AwakeSession? = nil) {
         self.backend = backend
         self.preferences = preferences
+        self.session = session
     }
 
     public func restorePreferences() throws {
@@ -34,6 +36,7 @@ public final class AwakeController {
     }
 
     public func set(_ mode: AwakeMode, enabled: Bool, persist: Bool = true) throws {
+        defer { session?.update(active: isActive) }
         if enabled {
             if assertions[mode] == nil { assertions[mode] = try backend.create(mode) }
         } else if let id = assertions[mode] {

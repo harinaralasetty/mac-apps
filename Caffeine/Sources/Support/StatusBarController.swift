@@ -3,11 +3,15 @@ import CaffeineCore
 
 @MainActor
 final class StatusBarController: NSObject, NSMenuDelegate {
-    private let awake = AwakeController(backend: PowerAssertions(), preferences: AwakePreferences())
+    private let awake: AwakeController
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private let menu = NSMenu()
     private var timer: Timer?
     private var statusRow: NSMenuItem!
+    private var streakRow: NSMenuItem!
+    private var awardsRow: NSMenuItem!
+    private var awardRows: [NSMenuItem] = []
+    private var refreshTicks = 0
     private var systemRow: NSMenuItem!
     private var displayRow: NSMenuItem!
     private var externalRow: NSMenuItem!
@@ -16,9 +20,44 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private var lastError: String?
 
     override init() {
+        var catalogError: String?
+        let awards: [CaffeineAward]
+        do {
+            guard let resources = Bundle.main.resourceURL else { throw AwardCatalog.Failure.invalidCatalog }
+            awards = try AwardCatalog.read(from: resources.appendingPathComponent("Badges/catalog.json"))
+        } catch {
+            awards = []
+            catalogError = "Badge catalog unavailable: \(error.localizedDescription)"
+        }
+        let session = AwakeSession(awards: awards, defaults: .standard)
+        awake = AwakeController(backend: PowerAssertions(), preferences: AwakePreferences(), session: session)
         super.init()
+        lastError = catalogError
         menu.delegate = self
         statusRow = add("Caffeine: normal mode")
+        streakRow = add("Awake streak: 00:00:00")
+        streakRow.toolTip = "One uninterrupted session. Both off, quit/relaunch or system sleep resets the timer. Display sleep and screen lock do not."
+        awardsRow = add("Awards")
+        let awardsMenu = NSMenu()
+        awardsMenu.autoenablesItems = false
+        for award in session.awards {
+            let row = NSMenuItem(title: "\(award.title) · \(award.thresholdLabel)", action: nil, keyEquivalent: "")
+            row.isEnabled = true
+            if let resources = Bundle.main.resourceURL,
+               let image = NSImage(contentsOf: resources.appendingPathComponent("Badges/\(award.image)")) {
+                image.size = NSSize(width: 36, height: 36)
+                row.image = image
+            }
+            awardsMenu.addItem(row)
+            awardRows.append(row)
+        }
+        if session.awards.isEmpty {
+            let row = NSMenuItem(title: "Badge catalog unavailable", action: nil, keyEquivalent: "")
+            row.isEnabled = false
+            awardsMenu.addItem(row)
+        }
+        awardsRow.submenu = awardsMenu
+        awardsRow.isEnabled = true
         menu.addItem(.separator())
         add("Turn On", action: #selector(turnOn), key: "a")
         add("Turn Off", action: #selector(turnOff), key: "o")
@@ -37,9 +76,15 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         do { try awake.restorePreferences() }
         catch { lastError = error.localizedDescription }
         refresh()
-        timer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in self?.refresh() }
+        let notifications = NSWorkspace.shared.notificationCenter
+        notifications.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
+        notifications.addObserver(self, selector: #selector(systemDidWake), name: NSWorkspace.didWakeNotification, object: nil)
+        let tick = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.timerTick() }
         }
+        // Common modes keep the timer visible while the menu is tracking.
+        RunLoop.main.add(tick, forMode: .common)
+        timer = tick
     }
 
     @discardableResult private func add(_ title: String, action: Selector? = nil, key: String = "") -> NSMenuItem {
@@ -52,7 +97,29 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) { refresh() }
 
+    private func timerTick() {
+        refreshSession()
+        refreshTicks += 1
+        if refreshTicks % 3 == 0 { refresh() }
+    }
+
+    private func refreshSession() {
+        guard let session = awake.session else { return }
+        session.update(active: awake.isActive)
+        streakRow.title = "Awake streak: \(session.durationLabel)"
+        awardsRow.title = "Awards (\(session.earnedIDs.count)/\(session.awards.count))"
+        for (award, row) in zip(session.awards, awardRows) {
+            let earned = session.earnedIDs.contains(award.id)
+            row.state = earned ? .on : .off
+            row.toolTip = earned ? "Earned in an uninterrupted Caffeine session." : "Locked: keep Caffeine on for \(award.thresholdLabel) in one uninterrupted session."
+        }
+    }
+
+    @objc private func systemWillSleep() { awake.session?.systemWillSleep(); refreshSession() }
+    @objc private func systemDidWake() { awake.session?.systemDidWake(active: awake.isActive); refresh() }
+
     private func refresh() {
+        refreshSession()
         let title = awake.isActive ? "Caffeine: On" : "Caffeine: Off"
         statusRow.title = title
         systemRow.state = awake.isEnabled(.system) ? .on : .off
@@ -109,9 +176,14 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func about() {
         let alert = NSAlert()
         alert.messageText = "Caffeine"
-        alert.informativeText = "Steam means Caffeine holds a system or display idle-sleep assertion. Turn On keeps the system awake; the display control is separate. Turn Off and Quit release only Caffeine's assertions. Other apps may still prevent idle sleep.\n\nYour choices are restored after relaunch. Quit releases assertions without changing those choices. Login startup is managed by the project's login script. Screen locking and security settings remain in effect. Lid closure, low battery and forced sleep can override idle-sleep assertions."
+        alert.informativeText = "Steam means Caffeine holds a system or display idle-sleep assertion. Turn On keeps the system awake; the display control is separate. Turn Off and Quit release only Caffeine's assertions. Other apps may still prevent idle sleep.\n\nAwake streak measures one uninterrupted session while either control is on. Both off, Quit/relaunch or system sleep resets it; display sleep and locking do not. Earned awards stay saved locally.\n\nYour choices are restored after relaunch. Quit releases assertions without changing those choices. Login startup is managed by the project's login script. Screen locking and security settings remain in effect. Lid closure, low battery and forced sleep can override idle-sleep assertions."
         alert.runModal()
     }
     @objc private func quit() { NSApp.terminate(nil) }
-    func shutdown() { timer?.invalidate(); try? awake.turnOff(persist: false) }
+    func shutdown() {
+        timer?.invalidate()
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+        try? awake.turnOff(persist: false)
+        awake.session?.update(active: false)
+    }
 }

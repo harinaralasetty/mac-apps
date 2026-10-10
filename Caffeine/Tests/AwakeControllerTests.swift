@@ -107,3 +107,36 @@ private final class FakeBackend: AssertionBackend {
     }
     #expect(!backend.released.contains(foreignID))
 }
+
+// Catches session resets on mode switches, or failed operations claiming progress.
+@MainActor @Test func sessionTracksActualOwnershipAcrossSwitchesAndFailures() throws {
+    var seconds: TimeInterval = 100
+    let awards = try AwardCatalog.read(from: URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("Resources/Badges/catalog.json"))
+    let session = AwakeSession(awards: awards, now: { seconds })
+    let backend = FakeBackend()
+    let controller = AwakeController(backend: backend, session: session)
+    backend.failCreate = true
+    #expect(throws: FakeBackend.Failure.self) { try controller.set(.system, enabled: true) }
+    seconds += 400
+    #expect(session.elapsed == 0)
+    #expect(session.earnedIDs.isEmpty)
+    backend.failCreate = false
+    try controller.set(.system, enabled: true)
+    seconds += 200
+    try controller.set(.display, enabled: true)
+    try controller.set(.system, enabled: false)
+    #expect(session.elapsed == 200)
+    seconds += 100
+    backend.failRelease = Set(controller.assertions.values)
+    #expect(throws: FakeBackend.Failure.self) { try controller.turnOff() }
+    #expect(session.elapsed == 300)
+    #expect(session.earnedIDs == ["first-sip"])
+    backend.failRelease = []
+    try controller.turnOff()
+    #expect(session.elapsed == 0)
+    seconds += 100
+    try controller.set(.system, enabled: true)
+    #expect(session.elapsed == 0)
+    try controller.turnOff(persist: false)
+    #expect(session.elapsed == 0)
+}

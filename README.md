@@ -5,7 +5,7 @@ Mute your default microphone or keep your Mac awake from the menu bar. **MicMute
 | App | Use it to | Main controls | Important limitation |
 | --- | --- | --- | --- |
 | [MicMute: microphone mute for Mac](MicMute/README.md) | Toggle the default input device's hardware mute and see its state | Left-click to toggle; right-click for status and Quit | The microphone must expose a writable mute control |
-| [Caffeine: keep your Mac awake](Caffeine/README.md) | Prevent system or display idle sleep and inspect other sleep assertions | Separate system/display switches; saved choices return after relaunch | Lid closure, low battery or forced sleep can override idle-sleep prevention |
+| [Caffeine: keep your Mac awake](Caffeine/README.md) | Prevent system or display idle sleep and inspect other sleep assertions | Separate system/display switches; uninterrupted timer and badges; saved choices return after relaunch | Lid closure, low battery or forced sleep can override idle-sleep prevention |
 
 ## Requirements
 
@@ -87,7 +87,7 @@ Run these commands from the repository root:
 
 The [build script](script/build_and_run.sh) writes bundles to `dist/`. `--build-only` does not stop or launch apps. Running the script without arguments builds and launches the staging Caffeine bundle; it does not replace installed apps. Run mode stops only instances at its own staging path. Avoid launching staging MicMute alongside an installed copy.
 
-The [test script](script/test.sh) runs six Caffeine logic tests, twelve MicMute fake-backend checks and a real IOKit assertion self-test. It locates the shipped Swift Testing macro plugin when required by Command Line Tools. Tests do not write microphone state or stop external processes. Passing tests does not establish visual menu behavior, compatibility with every microphone or successful startup at a real login.
+The [test script](script/test.sh) runs Caffeine assertion, timer and award logic tests, twelve MicMute fake-backend checks and a real IOKit assertion self-test. It locates the shipped Swift Testing macro plugin when required by Command Line Tools. Tests do not write microphone state or stop external processes. Passing tests does not establish visual menu behavior, compatibility with every microphone or successful startup at a real login.
 
 See [MicMute behavior and optional hardware verification](MicMute/README.md#verify-microphone-behavior) and [Caffeine manual UI verification](Caffeine/README.md#verify-the-menu-and-sleep-assertions) for checks beyond the automated suite.
 
