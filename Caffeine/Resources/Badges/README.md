@@ -4,13 +4,13 @@ Twelve distinct transparent PNG medallions in the approved chronological order, 
 
 Names and times are deliberately separate from raster artwork, so native labels remain legible and accessible. Each PNG is an individual image with transparent padding; use aspect-fit sizing when displaying it.
 
-Generated using the built-in image_gen tool, with First Sip as the style reference. The exact prompt set is retained in prompts.json. Asset integrity and transparency evidence is recorded in the project verification folder.
+Generated using the built-in image_gen tool, with First Sip as the style reference. The exact prompt set is retained in prompts.json. The app self-test verifies that all twelve images decode.
 
-The app bundles the twelve PNGs and catalog.json. The native Awards submenu uses this catalog for labels and thresholds; earned IDs persist locally, while each uninterrupted timer begins fresh. See the Caffeine README for reset rules and verification.
+The app bundles the twelve PNGs and catalog.json. The native Awards window uses this catalog for labels and thresholds. Earned IDs persist locally; current qualifying CLI session time also counts, including recovered time that may contain sleep. See the [Caffeine README](../../../README.md#timer-and-awards) for counting rules.
 
 ## Badge gallery
 
-| Badge | Award | Uninterrupted time |
+| Badge | Award | Session threshold |
 | --- | --- | --- |
 | <img src="first-sip.png" width="96" alt="First Sip" /> | First Sip | 5 minutes |
 | <img src="espresso-yourself.png" width="96" alt="Espresso Yourself" /> | Espresso Yourself | 1 hour |

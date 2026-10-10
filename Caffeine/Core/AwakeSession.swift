@@ -61,18 +61,29 @@ public final class AwakeSession {
 
     public var elapsed: TimeInterval { startedAt.map { max(0, now() - $0) } ?? 0 }
     public var durationLabel: String {
-        let seconds = Int(elapsed)
+        Self.durationLabel(seconds: elapsed)
+    }
+    public static func durationLabel(seconds elapsed: TimeInterval) -> String {
+        let seconds = Int(max(0, min(elapsed, Double(Int.max / 2))))
         let days = seconds / Self.secondsPerDay
         let clock = String(format: "%02d:%02d:%02d", (seconds % Self.secondsPerDay) / 3600, (seconds % 3600) / 60, seconds % 60)
         return days > 0 ? "\(days)d \(clock)" : clock
     }
 
-    /// Call with actual owned assertion state, including after failed operations.
-    public func update(active: Bool) {
-        if startedAt != nil { unlockReachedAwards() }
+    /// Active means an owned assertion or an observed qualifying CLI assertion.
+    public func update(active: Bool, creditBeforeStopping: Bool = true) {
+        if startedAt != nil && (active || creditBeforeStopping) { unlockReachedAwards() }
         if active && !sleeping {
             if startedAt == nil { startedAt = now() }
         } else { startedAt = nil }
+    }
+
+    /// Reconcile a current CLI interval, never add its duration to the streak.
+    /// Repeated polls/relaunches therefore cannot accumulate the same time twice.
+    public func includeCLIInterval(elapsed seconds: TimeInterval) {
+        guard !sleeping, let startedAt, seconds.isFinite, seconds >= 0 else { return }
+        self.startedAt = min(startedAt, now() - seconds)
+        unlockReachedAwards()
     }
 
     private func unlockReachedAwards() {

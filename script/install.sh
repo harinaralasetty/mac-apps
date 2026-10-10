@@ -7,13 +7,13 @@ LOGIN=false
 APPS=()
 for ARG in "$@"; do
   case "$ARG" in
-    MicMute|Caffeine) APPS+=("$ARG");;
+    Caffeine) APPS+=("$ARG");;
     --login) LOGIN=true;;
-    --help|-h) echo 'Usage: install.sh [MicMute] [Caffeine] [--login] (default: both)'; exit 0;;
+    --help|-h) echo 'Usage: install.sh [Caffeine] [--login]'; exit 0;;
     *) echo "Unknown option: $ARG" >&2; exit 2;;
   esac
 done
-if [[ ${#APPS[@]} -eq 0 ]]; then APPS=(MicMute Caffeine); fi
+if [[ ${#APPS[@]} -eq 0 ]]; then APPS=(Caffeine); fi
 mkdir -p "$INSTALL_DIR"
 [[ -w "$INSTALL_DIR" ]] || { echo "Cannot write $INSTALL_DIR. Choose MAC_APPS_INSTALL_DIR=\"\$HOME/Applications\"." >&2; exit 1; }
 for APP in "${APPS[@]}"; do
@@ -22,7 +22,7 @@ for APP in "${APPS[@]}"; do
 import pathlib, subprocess, hashlib, os, signal, time, plistlib
 root, location, name = pathlib.Path(__import__('sys').argv[1]), pathlib.Path(__import__('sys').argv[2]), __import__('sys').argv[3]
 source, target = root/'dist'/(name+'.app'), location/(name+'.app')
-expected = 'local.codex.MicMute' if name == 'MicMute' else 'personal.harinaralasetty.Caffeine'
+expected = 'personal.harinaralasetty.Caffeine'
 def identity(app):
     with (app/'Contents/Info.plist').open('rb') as file: return plistlib.load(file)['CFBundleIdentifier']
 def digest(app):
@@ -56,13 +56,13 @@ else:
             except ProcessLookupError: break
             time.sleep(.1)
         else: raise SystemExit('App did not quit; installation stopped')
-    # Copy atomically into place; retain the old directory in Trash for rollback.
+    # Copy atomically into place; retain the old directory in the workspace for rollback.
     temporary = location/('.'+name+'.installing-'+str(os.getpid())+'.app')
     subprocess.run(['ditto',str(source),str(temporary)],check=True)
     subprocess.run(['codesign','--verify','--strict',str(temporary)],check=True)
     old = None
     if target.exists():
-        old = pathlib.Path.home()/'.Trash'/(name+'-before-install-'+time.strftime('%Y%m%d-%H%M%S')+'-'+str(os.getpid())+'.app')
+        old = root/'recovery'/'install-backups'/(name+'-before-install-'+time.strftime('%Y%m%d-%H%M%S')+'-'+str(os.getpid())+'.app')
         target.rename(old)
     try: temporary.rename(target)
     except Exception:

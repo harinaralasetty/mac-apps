@@ -1,96 +1,104 @@
-# MicMute and Caffeine: macOS menu bar utilities
+# Caffeine for macOS
 
-Mute your default microphone or keep your Mac awake from the menu bar. **MicMute** controls a supported microphone's hardware mute; **Caffeine** prevents system or display idle sleep with independent controls. Both are native Swift and AppKit apps with no third-party package dependencies.
+A native menu-bar utility to keep your Mac awake, follow `caffeinate` CLI sessions, and earn twelve coffee awards. Caffeine uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.3 (build 4)**.
 
-| App | Use it to | Main controls | Important limitation |
-| --- | --- | --- | --- |
-| [MicMute: microphone mute for Mac](MicMute/README.md) | Toggle the default input device's hardware mute and see its state | Left-click to toggle; right-click for status and Quit | The microphone must expose a writable mute control |
-| [Caffeine: keep your Mac awake](Caffeine/README.md) | Prevent system or display idle sleep and inspect other sleep assertions | Separate system/display switches; uninterrupted timer and badges; saved choices return after relaunch | Lid closure, low battery or forced sleep can override idle-sleep prevention |
+- Control system and display idle sleep independently.
+- See a session timer for app-owned and qualifying CLI assertions.
+- Recover earlier time from a still-running CLI session, counting overlaps once.
+- Open a resizable Awards window: locked artwork is grey, earned artwork is full colour, and earned badges persist.
+
+![Actual Caffeine Awards window showing five full-colour earned badges and a grey locked three-day milestone](docs/screenshots/awards.jpg)
+
+Actual installed 1.3 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 14 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown.
 
 ## Requirements
 
-- macOS 13 or later to run the apps.
-- A compatible Apple Swift 6 toolchain to build from source, supplied by Xcode or Xcode Command Line Tools. The [Swift package](Package.swift) declares tools version 6.0; use a current toolchain that supports the source syntax.
-- Git and Python 3 for the scripts. Tests on newer Command Line Tools may require macOS 14 or later.
-- Write access to the installation directory. The installer does not request administrator privileges.
+The app declares **macOS 13 or later**. Build with a compatible **Swift 6** toolchain from Xcode or Apple Command Line Tools, plus Git and Python 3 for scripts. The automated suite has been run on this Mac; test-framework compatibility on macOS 13 and other machines is not established. Newer Swift Testing libraries may require macOS 14 or later.
 
-Install Apple's Command Line Tools with `xcode-select --install` if needed. Check the selected toolchain with `xcode-select -p` and `swift --version`.
+Check your toolchain with `xcode-select -p` and `swift --version`. Local bundles are ad hoc signed and verified by the scripts; this repository does not provide a notarized release or App Store distribution.
 
 ## Install from source
-
-Clone the repository, then run **one** installer command for the apps you want. The [installer](script/install.sh) builds, verifies, installs and opens the selected apps.
 
 ```sh
 git clone https://github.com/harinaralasetty/mac-apps.git
 cd mac-apps
-./script/install.sh MicMute
+./script/install.sh Caffeine
 ```
 
-Other choices, run from the repository root:
+The existing repository URL remains `mac-apps`; current contents build Caffeine only. The installer builds, verifies, installs into `/Applications` and opens Caffeine. It needs write access to the destination and does not elevate privileges. For a user installation:
 
 ```sh
-./script/install.sh Caffeine          # Caffeine only
-./script/install.sh MicMute Caffeine  # Both; also the default with no app names
-./script/install.sh Caffeine --login  # Caffeine with startup at login
-./script/install.sh --login           # Both with startup at login
+MAC_APPS_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine
+open "$HOME/Applications/Caffeine.app"
 ```
 
-Apps are installed in `/Applications` by default. For a user-only location:
+Re-running skips byte-identical bundles. Updates preserve a ZIP and the prior bundle in `recovery/install-backups/` in the checkout, then verify the installed bytes. To roll back, quit Caffeine and restore the matching backup bundle to the same install path. Backups and build output are ignored by Git.
+
+Optional login startup uses a per-user LaunchAgent, without a KeepAlive loop:
 
 ```sh
-MAC_APPS_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine --login
-```
-
-Open the installed app from Finder or Launchpad. For example, with the default location:
-
-```sh
-open /Applications/MicMute.app
-open /Applications/Caffeine.app
-```
-
-Local bundles are ad hoc signed. The scripts verify bundle signatures; this is separate from Developer ID signing or notarization.
-
-### Updating and recovery
-
-Re-running the installer skips replacement of byte-identical bundles. Before replacing an older version, it saves a ZIP in `recovery/install-backups/` and moves the old bundle to your Trash. It quits only the selected installed app. Unselected apps and external sleep assertions are untouched; installation never runs a hardware microphone test.
-
-To restore a previous bundle, quit that app, keep the current bundle if needed, then restore the matching `.app` from Trash or extract its backup ZIP and place it in the installation directory. Reopen it from that location.
-
-If moving an app with existing startup registration, first disable its old registration, then reinstall at the new location with `--login`:
-
-```sh
-./script/login_items.sh disable Caffeine
-MAC_APPS_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine --login
-```
-
-## Start at login
-
-The [login startup script](script/login_items.sh) uses per-user LaunchAgents to open installed apps once in an Aqua login session. It has no KeepAlive loop, privileged helper or duplicate SMAppService registration.
-
-```sh
-./script/login_items.sh enable         # Both installed apps
-./script/login_items.sh status         # Read existing registration
+./script/install.sh Caffeine --login
+./script/login_items.sh status Caffeine
 ./script/login_items.sh disable Caffeine
 ```
 
-Disabling startup does not quit the running app. The installer records the selected location. Registration checks do not prove that a future login will launch the app.
+Disabling startup does not quit Caffeine. When moving installations, disable the old registration before installing at the new path with `--login`. A registration check does not establish success at a future login.
 
-## Build and verify
+## Use the menu
 
-Run these commands from the repository root:
+| Control | Behavior |
+| --- | --- |
+| Turn On | Enables system idle-sleep prevention |
+| Keep System Awake | Toggles the app's system assertion |
+| Keep Display Awake | Toggles the app's display assertion independently |
+| Turn Off | Releases only Caffeine-owned assertions |
+| CLI session / Awake streak | Shows current elapsed time |
+| Show Awards… | Opens or raises one retained native Awards window |
+| Other Sleep Assertions | Explains other active system/display assertions |
+
+A steaming cup means Caffeine or qualifying CLI activity is active. A plain cup means neither is active. App choices persist and restore on launch; assertion IDs are always acquired afresh. Turning Caffeine off never stops external CLI processes. Lid closure, low battery, forced sleep and macOS power policy can override idle-sleep prevention.
+
+## Timer and awards
+
+![Closeup of the actual CLI session timer and matching award progress, including the sleep caveat](docs/screenshots/timer.jpg)
+
+Caffeine samples qualifying CLI assertions once per second. System idle-sleep (`-i` or default) and display idle-sleep (`-d`) count. Timed `-t` and watched-process `-w` sessions stop qualifying when their assertions expire. User-active `-u`, disk-only `-m`, and unrelated apps do not earn awards. `-s` counts only on AC power and receives no historical credit by itself because earlier AC conditions are unknown.
+
+A currently active assertion with a macOS start timestamp and global ID can recover its earlier duration, **including possible sleep**. That earlier time counts toward awards. The app reconciles one continuous interval by taking elapsed coverage, not by adding simultaneous sessions. Persisted interval claims match both identity and start timestamp; previously observed overlaps survive relaunch while an associated assertion is still active. Repeated opens, polling and relaunches do not multiply time or duplicate earned IDs. A restarted, nonoverlapping CLI identity starts a fresh interval. Closed process history is not restored. Missing metadata falls back to time observed by the app; future dates receive no earlier credit.
+
+App-only progress resets when no qualifying activity remains, on quit/relaunch, or system sleep. A still-running CLI session can recover its interval after relaunch or sleep. Calendar changes do not advance an already anchored interval; a detected clock discontinuity prevents a new historical anchor. Display sleep and screen locking do not reset app-only progress. Earned awards remain saved, and no unlock dates are fabricated.
+
+| Award | Session threshold |
+| --- | --- |
+| First Sip | 5 minutes |
+| Espresso Yourself | 1 hour |
+| Just One More Cup | 4 hours |
+| The Daily Grind | 8 hours |
+| Certified All-Nighter | 24 hours |
+| Decaf Is a Myth | 3 days |
+| Sleep Is a Rumor | 7 days |
+| Bean There, Done That | 14 days |
+| Your Mac Is Legally a Café | 30 days |
+| Roast Level: Critical | 60 days |
+| Legally an Espresso Machine | 90 days |
+| Caffeine Overdose | 365 days |
+
+A day is 24 hours. The [badge catalog](Caffeine/Resources/Badges/catalog.json) defines ordered thresholds and artwork; the [badge gallery](Caffeine/Resources/Badges/README.md) shows all twelve images.
+
+## Build and test
 
 ```sh
 ./script/build_and_run.sh Caffeine --build-only
-./script/build_and_run.sh MicMute --build-only
 ./script/test.sh
+python3 script/audit_source.py
 ```
 
-The [build script](script/build_and_run.sh) writes bundles to `dist/`. `--build-only` does not stop or launch apps. Running the script without arguments builds and launches the staging Caffeine bundle; it does not replace installed apps. Run mode stops only instances at its own staging path. Avoid launching staging MicMute alongside an installed copy.
+The build creates `dist/Caffeine.app`. Build-only does not launch or quit apps. The test script runs 22 Swift tests and a packaged self-test: real assertion acquisition/release, twenty ownership cycles, image decoding, simulated clocks, persistence, CLI overlap/restart and real test-owned CLI expiry. Tests use isolated defaults and never advance real award storage or terminate existing CLI processes.
 
-The [test script](script/test.sh) runs Caffeine assertion, timer and award logic tests, twelve MicMute fake-backend checks and a real IOKit assertion self-test. It locates the shipped Swift Testing macro plugin when required by Command Line Tools. Tests do not write microphone state or stop external processes. Passing tests does not establish visual menu behavior, compatibility with every microphone or successful startup at a real login.
+See the [architecture and contribution guide](ARCHITECTURE.md) for the file map, invariants and diagnostic commands. Real system sleep, login-cycle and AC/battery switching remain manual checks; do them only when ongoing work can safely pause. Automated tests do not certify every macOS version or hardware configuration.
 
-See [MicMute behavior and optional hardware verification](MicMute/README.md#verify-microphone-behavior) and [Caffeine manual UI verification](Caffeine/README.md#verify-the-menu-and-sleep-assertions) for checks beyond the automated suite.
+## Privacy and support
 
-## Support and maintenance
+The app has no network client, account, telemetry service or cloud sync code. It reads local power-assertion metadata and saves app choices, earned IDs and CLI interval claims in local UserDefaults. Screenshots in this repository contain app UI only. Build/install scripts use local tools; cloning and pushing Git contact GitHub.
 
-Maintained by [Hari Naralasetty](https://github.com/harinaralasetty). Report reproducible problems through [mac-apps issues](https://github.com/harinaralasetty/mac-apps/issues), including the app, macOS version, Swift version for build failures, and relevant error text.
+Maintained by [Hari Naralasetty](https://github.com/harinaralasetty). Report reproducible issues through [Caffeine repository issues](https://github.com/harinaralasetty/mac-apps/issues), including macOS version, build/toolchain version, relevant errors and whether app-owned or CLI activity was involved. Review screenshots/logs for private information before posting.

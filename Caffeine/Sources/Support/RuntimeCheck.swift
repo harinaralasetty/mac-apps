@@ -4,6 +4,69 @@ import CaffeineCore
 @MainActor
 enum RuntimeCheck {
     enum Failure: Error { case check(String) }
+    static func awardsWindowCheck(outputDirectory: URL) throws {
+        func trace(_ message: String) {
+            FileHandle.standardError.write(Data("Awards UI diagnostic: \(message)\n".utf8))
+        }
+        NSSetUncaughtExceptionHandler { exception in
+            let message = "Awards UI exception: \(exception.name.rawValue): \(exception.reason ?? "no reason")\n" + exception.callStackSymbols.prefix(20).joined(separator: "\n") + "\n"
+            FileHandle.standardError.write(Data(message.utf8))
+        }
+        trace("initializing AppKit")
+        _ = NSApplication.shared
+        trace("reading badge catalog")
+        guard let resources = Bundle.main.resourceURL else { throw Failure.check("Bundle resources missing") }
+        let awards = try AwardCatalog.read(from: resources.appendingPathComponent("Badges/catalog.json"))
+        trace("creating Awards controller")
+        let controller = AwardsWindowController(awards: awards)
+        var seconds: TimeInterval = 0
+        let session = AwakeSession(awards: awards, now: { seconds })
+        session.update(active: true)
+        seconds = 299
+        session.update(active: true)
+        controller.presentation.update(from: session)
+        trace("creating native Awards window")
+        let first = controller.show(activate: false)
+        trace("checking repeated open")
+        guard first === controller.show(activate: false), first.title == "Caffeine Awards" else {
+            throw Failure.check("Awards window must be reused")
+        }
+        first.close()
+        trace("checking Close/reopen")
+        guard first === controller.show(activate: false) else { throw Failure.check("Close/reopen created another window") }
+        print("PASS: repeated opens and Close/reopen reuse one native Awards window")
+        try FileManager.default.createDirectory(at: outputDirectory, withIntermediateDirectories: true)
+        for (name, size) in [("awards-compact", NSSize(width: 400, height: 460)), ("awards-window", NSSize(width: 600, height: 640))] {
+            trace("laying out \(name)")
+            first.setContentSize(size)
+            guard let view = first.contentView else { throw Failure.check("Awards content missing") }
+            view.layoutSubtreeIfNeeded()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+            trace("allocating bitmap for \(name)")
+            guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { throw Failure.check("Awards render unavailable") }
+            view.cacheDisplay(in: view.bounds, to: bitmap)
+            trace("encoding \(name)")
+            guard let png = bitmap.representation(using: .png, properties: [:]) else { throw Failure.check("Awards PNG unavailable") }
+            try png.write(to: outputDirectory.appendingPathComponent(name + ".png"))
+            print("PASS: Awards native content rendered at \(Int(size.width)) × \(Int(size.height))")
+        }
+        seconds = 300
+        session.update(active: true)
+        controller.presentation.update(from: session)
+        guard controller.presentation.earnedIDs == ["first-sip"] else { throw Failure.check("Awards presentation missed unlock") }
+        print("PASS: presentation changes from locked to earned at the exact threshold, without user defaults")
+        first.setContentSize(NSSize(width: 600, height: 640))
+        if let view = first.contentView {
+            view.layoutSubtreeIfNeeded()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+            guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { throw Failure.check("Earned Awards render unavailable") }
+            view.cacheDisplay(in: view.bounds, to: bitmap)
+            guard let png = bitmap.representation(using: .png, properties: [:]) else { throw Failure.check("Earned Awards PNG unavailable") }
+            try png.write(to: outputDirectory.appendingPathComponent("awards-earned.png"))
+            print("PASS: earned full-colour and locked grayscale states rendered without user defaults")
+        }
+        first.close()
+    }
     static func run() throws {
         let before = try AssertionSnapshot.read()
         // Capture existing caffeinate assertions, including assertions unrelated to us.

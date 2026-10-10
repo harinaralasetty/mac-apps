@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 MODE="${1:-status}"
-APP_NAME="${2:-both}"
-case "$MODE" in enable|disable|status) ;; *) echo 'Usage: login_items.sh enable|disable|status [Caffeine|MicMute|both]' >&2; exit 2;; esac
-case "$APP_NAME" in Caffeine|MicMute) APPS=("$APP_NAME");; both) APPS=(MicMute Caffeine);; *) exit 2;; esac
+APP_NAME="${2:-Caffeine}"
+case "$MODE" in enable|disable|status) ;; *) echo 'Usage: login_items.sh enable|disable|status [Caffeine]' >&2; exit 2;; esac
+[[ "$APP_NAME" == Caffeine ]] || { echo "This script manages Caffeine only." >&2; exit 2; }
+APPS=(Caffeine)
 USER_DOMAIN="gui/$(id -u)"
 for APP in "${APPS[@]}"; do
   LABEL="personal.harinaralasetty.${APP}.login"

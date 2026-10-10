@@ -2,7 +2,10 @@
 set -euo pipefail
 APP_NAME="${1:-Caffeine}"
 MODE="${2:-run}"
-case "$APP_NAME" in Caffeine) BUNDLE_ID="personal.harinaralasetty.Caffeine";; MicMute) BUNDLE_ID="local.codex.MicMute";; *) echo 'Choose Caffeine or MicMute' >&2; exit 2;; esac
+[[ "$APP_NAME" == Caffeine ]] || { echo 'This repository builds Caffeine.' >&2; exit 2; }
+BUNDLE_ID="personal.harinaralasetty.Caffeine"
+APP_VERSION=1.3
+APP_BUILD=4
 case "$MODE" in run|--build-only|--verify|--debug|--logs|--telemetry) ;; *) echo 'Modes: run, --build-only, --verify, --debug, --logs, --telemetry' >&2; exit 2;; esac
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
@@ -10,13 +13,9 @@ swift build --product "$APP_NAME" --jobs 2
 APP_BUNDLE="$ROOT_DIR/dist/$APP_NAME.app"
 mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
 cp -X "$(swift build --show-bin-path)/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
-if [[ "$APP_NAME" == MicMute ]]; then
-  cp -X "$ROOT_DIR/MicMute/Resources/"{AppIcon.icns,MicLive.png,MicMuted.png,MicUnavailable.png} "$APP_BUNDLE/Contents/Resources/"
-else
-  cp -X "$ROOT_DIR/Caffeine/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/"
-  mkdir -p "$APP_BUNDLE/Contents/Resources/Badges"
-  cp -X "$ROOT_DIR/Caffeine/Resources/Badges/catalog.json" "$ROOT_DIR/Caffeine/Resources/Badges/"*.png "$APP_BUNDLE/Contents/Resources/Badges/"
-fi
+cp -X "$ROOT_DIR/Caffeine/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/"
+mkdir -p "$APP_BUNDLE/Contents/Resources/Badges"
+cp -X "$ROOT_DIR/Caffeine/Resources/Badges/catalog.json" "$ROOT_DIR/Caffeine/Resources/Badges/"*.png "$APP_BUNDLE/Contents/Resources/Badges/"
 cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -25,8 +24,8 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
 <key>CFBundleName</key><string>$APP_NAME</string>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>1.0</string>
-<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleShortVersionString</key><string>$APP_VERSION</string>
+<key>CFBundleVersion</key><string>$APP_BUILD</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>NSPrincipalClass</key><string>NSApplication</string>
 <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
