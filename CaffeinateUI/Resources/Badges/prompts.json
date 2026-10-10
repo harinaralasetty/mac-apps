@@ -50,5 +50,17 @@
       "id": "caffeine-overdose",
       "prompt": "Use case: stylized-concept. Asset type: one individual achievement badge for native macOS Caffeine. The supplied image is a STYLE REFERENCE ONLY, not an edit target. Make a NEW badge using the subject described below, matching its front-facing circular copper medallion, warm ivory enamel, espresso-brown outlines, rounded forms and polished collectible enamel-pin / softly dimensional illustration. Crisp iconic artwork legible at 64px. Square PNG with truly transparent background, generous transparent padding, medallion about 78% of canvas. Center the entire complete badge. Match the same family and medallion scale but distinguish the new subject strongly. No letters, numbers, captions, typography, watermark, background rectangle, or shadow outside the badge. Labels are provided separately in native UI. Subject: the most spectacular final legendary badge: a crowned ivory espresso cup overflowing with swirling golden coffee steam, full gold laurel wreath, six orbiting polished coffee beans, symmetrical copper ribbon flourishes and small radiant gold stars; dramatic collectible trophy, coffee-themed, no medical imagery. This award is Caffeine Overdose at 365 days."
     }
-  ]
+  ],
+  "approved_revision": {
+    "date": "2026-10-10",
+    "generator": "built-in image_gen",
+    "method": "Extract each approved medal from the four-award preview onto genuine transparency; preserve the approved subject, rim and interior; remove sheet heading, cards and captions.",
+    "subjects": {
+      "espresso-yourself": "Espresso glass",
+      "sleep-is-a-rumor": "Owl on coffee tin",
+      "bean-there-done-that": "Coffee passport",
+      "caffeine-overdose": "Crowned coffee trophy"
+    },
+    "invariants": "The other eight images, IDs, thresholds, names and earned progress remain unchanged."
+  }
 }

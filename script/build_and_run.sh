@@ -5,8 +5,8 @@ APP_DISPLAY="Caffeinate UI"
 MODE="${2:-run}"
 [[ "$APP_NAME" == CaffeinateUI ]] || { echo 'This repository builds Caffeinate UI.' >&2; exit 2; }
 BUNDLE_ID="personal.harinaralasetty.Caffeine"
-APP_VERSION=1.4
-APP_BUILD=5
+APP_VERSION=1.5
+APP_BUILD=6
 case "$MODE" in run|--build-only|--release-build-only|--verify|--debug|--logs|--telemetry) ;; *) echo 'Modes: run, --build-only, --release-build-only, --verify, --debug, --logs, --telemetry' >&2; exit 2;; esac
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"

@@ -4,7 +4,7 @@
 
 **Keep your Mac awake. Keep your agents running.**
 
-Built for the agent era: Hari made Caffeinate UI for long-running local coding agents, builds and terminal workflows. It manages macOS idle-sleep assertions and shows active `caffeinate` sessions, with twelve coffee awards along the way. Caffeinate UI uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.4 (build 5)**.
+Built for the agent era: Hari made Caffeinate UI for long-running local coding agents, builds and terminal workflows. It manages macOS idle-sleep assertions and shows active `caffeinate` sessions, with twelve coffee awards along the way. Caffeinate UI uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.5 (build 6)**.
 
 - Control system and display idle sleep independently.
 - See a session timer for app-owned and qualifying CLI assertions.
@@ -13,7 +13,7 @@ Built for the agent era: Hari made Caffeinate UI for long-running local coding a
 
 ![Actual Caffeinate UI Awards window showing five full-colour earned badges and a grey locked three-day milestone](docs/screenshots/awards.jpg)
 
-Actual installed 1.4 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 14 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown.
+Actual installed 1.5 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 16 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown.
 
 ## Requirements
 
