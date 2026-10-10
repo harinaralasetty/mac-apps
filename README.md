@@ -1,17 +1,19 @@
-# Caffeine for macOS
+# Caffeinate UI for macOS
 
-<img src="Caffeine/Resources/AppIcon.png" alt="Caffeine app logo: a steaming white coffee cup on a warm copper background" width="160" height="160">
+<img src="CaffeinateUI/Resources/AppIcon.png" alt="Caffeinate UI app logo: a steaming white coffee cup on a warm copper background" width="160" height="160">
 
-A native menu-bar utility to keep your Mac awake, follow `caffeinate` CLI sessions, and earn twelve coffee awards. Caffeine uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.3 (build 4)**.
+**Keep your Mac awake. Keep your agents running.**
+
+Built for the agent era: Hari made Caffeinate UI for long-running local coding agents, builds and terminal workflows. It manages macOS idle-sleep assertions and shows active `caffeinate` sessions, with twelve coffee awards along the way. Caffeinate UI uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.4 (build 5)**.
 
 - Control system and display idle sleep independently.
 - See a session timer for app-owned and qualifying CLI assertions.
 - Recover earlier time from a still-running CLI session, counting overlaps once.
 - Open a resizable Awards window: locked artwork is grey, earned artwork is full colour, and earned badges persist.
 
-![Actual Caffeine Awards window showing five full-colour earned badges and a grey locked three-day milestone](docs/screenshots/awards.jpg)
+![Actual Caffeinate UI Awards window showing five full-colour earned badges and a grey locked three-day milestone](docs/screenshots/awards.jpg)
 
-Actual installed 1.3 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 14 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown.
+Actual installed 1.4 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 14 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown.
 
 ## Requirements
 
@@ -22,29 +24,29 @@ Check your toolchain with `xcode-select -p` and `swift --version`. Local bundles
 ## Install from source
 
 ```sh
-git clone https://github.com/harinaralasetty/caffeine.git
-cd caffeine
-./script/install.sh Caffeine
+git clone https://github.com/harinaralasetty/caffeinate-ui.git
+cd caffeinate-ui
+./script/install.sh CaffeinateUI
 ```
 
-This checkout builds Caffeine only. The installer builds, verifies, installs into `/Applications` and opens Caffeine. It needs write access to the destination and does not elevate privileges. For a user installation:
+This checkout builds Caffeinate UI only. The installer builds, verifies, installs into `/Applications` and opens Caffeinate UI. It needs write access to the destination and does not elevate privileges. For a user installation:
 
 ```sh
-CAFFEINE_INSTALL_DIR="$HOME/Applications" ./script/install.sh Caffeine
-open "$HOME/Applications/Caffeine.app"
+CAFFEINATE_UI_INSTALL_DIR="$HOME/Applications" ./script/install.sh CaffeinateUI
+open "$HOME/Applications/Caffeinate UI.app"
 ```
 
-Re-running skips byte-identical bundles. Updates preserve a ZIP and the prior bundle in `recovery/install-backups/` in the checkout, then verify the installed bytes. To roll back, quit Caffeine and restore the matching backup bundle to the same install path. Backups and build output are ignored by Git.
+Re-running skips byte-identical bundles. Updates preserve a ZIP and the prior bundle in `recovery/install-backups/` in the checkout, then verify the installed bytes. To roll back, quit Caffeinate UI and restore the matching backup bundle to the same install path. Backups and build output are ignored by Git.
 
 Optional login startup uses a per-user LaunchAgent, without a KeepAlive loop:
 
 ```sh
-./script/install.sh Caffeine --login
-./script/login_items.sh status Caffeine
-./script/login_items.sh disable Caffeine
+./script/install.sh CaffeinateUI --login
+./script/login_items.sh status CaffeinateUI
+./script/login_items.sh disable CaffeinateUI
 ```
 
-Disabling startup does not quit Caffeine. When moving installations, disable the old registration before installing at the new path with `--login`. A registration check does not establish success at a future login.
+Disabling startup does not quit Caffeinate UI. When moving installations, disable the old registration before installing at the new path with `--login`. A registration check does not establish success at a future login.
 
 ## Use the menu
 
@@ -53,18 +55,18 @@ Disabling startup does not quit Caffeine. When moving installations, disable the
 | Turn On | Enables system idle-sleep prevention |
 | Keep System Awake | Toggles the app's system assertion |
 | Keep Display Awake | Toggles the app's display assertion independently |
-| Turn Off | Releases only Caffeine-owned assertions |
+| Turn Off | Releases only Caffeinate UI-owned assertions |
 | CLI session / Awake streak | Shows current elapsed time |
 | Show Awards… | Opens or raises one retained native Awards window |
 | Other Sleep Assertions | Explains other active system/display assertions |
 
-A steaming cup means Caffeine or qualifying CLI activity is active. A plain cup means neither is active. App choices persist and restore on launch; assertion IDs are always acquired afresh. Turning Caffeine off never stops external CLI processes. Lid closure, low battery, forced sleep and macOS power policy can override idle-sleep prevention.
+A steaming cup means Caffeinate UI or qualifying CLI activity is active. A plain cup means neither is active. App choices persist and restore on launch; assertion IDs are always acquired afresh. Turning Caffeinate UI off never stops external CLI processes. Lid closure, low battery, forced sleep and macOS power policy can override idle-sleep prevention. Caffeinate UI does not supervise or restart agents, prevent crashes or network outages, or guarantee uninterrupted jobs. Keeping the system or display awake can increase battery use; enable only the controls your task needs.
 
 ## Timer and awards
 
 ![Closeup of the actual CLI session timer and matching award progress, including the sleep caveat](docs/screenshots/timer.jpg)
 
-Caffeine samples qualifying CLI assertions once per second. System idle-sleep (`-i` or default) and display idle-sleep (`-d`) count. Timed `-t` and watched-process `-w` sessions stop qualifying when their assertions expire. User-active `-u`, disk-only `-m`, and unrelated apps do not earn awards. `-s` counts only on AC power and receives no historical credit by itself because earlier AC conditions are unknown.
+Caffeinate UI samples qualifying CLI assertions once per second. System idle-sleep (`-i` or default) and display idle-sleep (`-d`) count. Timed `-t` and watched-process `-w` sessions stop qualifying when their assertions expire. User-active `-u`, disk-only `-m`, and unrelated apps do not earn awards. `-s` counts only on AC power and receives no historical credit by itself because earlier AC conditions are unknown.
 
 A currently active assertion with a macOS start timestamp and global ID can recover its earlier duration, **including possible sleep**. That earlier time counts toward awards. The app reconciles one continuous interval by taking elapsed coverage, not by adding simultaneous sessions. Persisted interval claims match both identity and start timestamp; previously observed overlaps survive relaunch while an associated assertion is still active. Repeated opens, polling and relaunches do not multiply time or duplicate earned IDs. A restarted, nonoverlapping CLI identity starts a fresh interval. Closed process history is not restored. Missing metadata falls back to time observed by the app; future dates receive no earlier credit.
 
@@ -85,17 +87,17 @@ App-only progress resets when no qualifying activity remains, on quit/relaunch, 
 | Legally an Espresso Machine | 90 days |
 | Caffeine Overdose | 365 days |
 
-A day is 24 hours. The [badge catalog](Caffeine/Resources/Badges/catalog.json) defines ordered thresholds and artwork; the [badge gallery](Caffeine/Resources/Badges/README.md) shows all twelve images.
+A day is 24 hours. The [badge catalog](CaffeinateUI/Resources/Badges/catalog.json) defines ordered thresholds and artwork; the [badge gallery](CaffeinateUI/Resources/Badges/README.md) shows all twelve images.
 
 ## Build and test
 
 ```sh
-./script/build_and_run.sh Caffeine --build-only
+./script/build_and_run.sh CaffeinateUI --build-only
 ./script/test.sh
 python3 script/audit_source.py
 ```
 
-The build creates `dist/Caffeine.app`. Build-only does not launch or quit apps. The test script runs 22 Swift tests and a packaged self-test: real assertion acquisition/release, twenty ownership cycles, image decoding, simulated clocks, persistence, CLI overlap/restart and real test-owned CLI expiry. Tests use isolated defaults and never advance real award storage or terminate existing CLI processes.
+The build creates `"dist/Caffeinate UI.app"`. Build-only does not launch or quit apps. The test script runs 22 Swift tests and a packaged self-test: real assertion acquisition/release, twenty ownership cycles, image decoding, simulated clocks, persistence, CLI overlap/restart and real test-owned CLI expiry. Tests use isolated defaults and never advance real award storage or terminate existing CLI processes.
 
 See the [architecture and contribution guide](ARCHITECTURE.md) for the file map, invariants and diagnostic commands. Real system sleep, login-cycle and AC/battery switching remain manual checks; do them only when ongoing work can safely pause. Automated tests do not certify every macOS version or hardware configuration.
 
@@ -103,4 +105,10 @@ See the [architecture and contribution guide](ARCHITECTURE.md) for the file map,
 
 The app has no network client, account, telemetry service or cloud sync code. It reads local power-assertion metadata and saves app choices, earned IDs and CLI interval claims in local UserDefaults. Screenshots in this repository contain app UI only. Build/install scripts use local tools; cloning and pushing Git contact GitHub.
 
-Maintained by [Hari Naralasetty](https://github.com/harinaralasetty). Report reproducible issues through [Caffeine repository issues](https://github.com/harinaralasetty/caffeine/issues), including macOS version, build/toolchain version, relevant errors and whether app-owned or CLI activity was involved. Review screenshots/logs for private information before posting.
+Maintained by [Hari Naralasetty](https://github.com/harinaralasetty). Report reproducible issues through [Caffeinate UI repository issues](https://github.com/harinaralasetty/caffeinate-ui/issues), including macOS version, build/toolchain version, relevant errors and whether app-owned or CLI activity was involved. Review screenshots/logs for private information before posting.
+
+## Homebrew preparation
+
+The [distribution plan](distribution/README.md) and draft cask are preparation only. A signed, notarized release and tested tap are still pending; no Homebrew installation command for this app is published.
+
+The rename keeps `personal.harinaralasetty.Caffeine` as the bundle identifier and the original login-job label so existing awards and settings survive. The installer backs up and migrates this project's old `Caffeine.app` only after checking its identity, and updates an already configured login job to `Caffeinate UI.app`. Another vendor's bundle is never overwritten.

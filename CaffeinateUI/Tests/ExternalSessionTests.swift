@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import CaffeineCore
+@testable import CaffeinateUICore
 
 @MainActor private struct TestBackend: AssertionBackend {
     func create(_ mode: AwakeMode) throws -> UInt32 { mode == .system ? 1 : 2 }

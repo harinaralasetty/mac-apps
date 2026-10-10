@@ -1,5 +1,5 @@
 import AppKit
-import CaffeineCore
+import CaffeinateUICore
 
 @MainActor
 enum RuntimeCheck {
@@ -28,7 +28,7 @@ enum RuntimeCheck {
         trace("creating native Awards window")
         let first = controller.show(activate: false)
         trace("checking repeated open")
-        guard first === controller.show(activate: false), first.title == "Caffeine Awards" else {
+        guard first === controller.show(activate: false), first.title == "Caffeinate UI Awards" else {
             throw Failure.check("Awards window must be reused")
         }
         first.close()
@@ -89,7 +89,7 @@ enum RuntimeCheck {
         try verify(!controller.isActive, "startup in normal mode")
         try controller.set(.system, enabled: true)
         let system = try AssertionSnapshot.read().entries.filter { $0.pid == getpid() }
-        try verify(system.contains { $0.keepsSystemAwake && $0.name == "Caffeine: system awake" }, "real system assertion acquired")
+        try verify(system.contains { $0.keepsSystemAwake && $0.name == "Caffeinate UI: system awake" }, "real system assertion acquired")
         try verify(!system.contains(where: \.keepsDisplayAwake), "system control leaves display independent")
         uptime += 300
         try controller.set(.display, enabled: true)

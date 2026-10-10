@@ -20,7 +20,7 @@ for name in filter(None, paths):
         failures.append((name, 'possible credential'))
     elif b'\0' in data and path.suffix not in allowed_assets:
         failures.append((name, 'unexpected binary'))
-    elif path.suffix in allowed_assets and not name.startswith(('Caffeine/Resources/', 'docs/screenshots/')):
+    elif path.suffix in allowed_assets and not name.startswith(('CaffeinateUI/Resources/', 'docs/screenshots/')):
         failures.append((name, 'unexpected asset'))
 for name, reason in failures: print(f'FAIL: {name}: {reason}')
 print(f'Scanned {len(list(filter(None, paths)))} tracked files; {len(failures)} findings.')

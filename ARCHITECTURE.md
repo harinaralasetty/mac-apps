@@ -1,23 +1,23 @@
-# Caffeine architecture and contribution guide
+# Caffeinate UI architecture and contribution guide
 
-Start with the [README](README.md) for product behavior and supported commands. This guide maps the implementation for contributors and coding/retrieval agents. Package.swift declares CaffeineCore, the Caffeine executable and CaffeineCoreTests; there are no third-party dependencies.
+Start with the [README](README.md) for product behavior and supported commands. This guide maps the implementation for contributors and coding/retrieval agents. Product purpose: keep local coding agents, builds and terminal workflows running by managing idle-sleep assertions and showing caffeinate sessions. It does not supervise agents or guarantee job continuity. Package.swift declares CaffeinateUICore, the CaffeinateUI executable and CaffeinateUICoreTests; there are no third-party dependencies.
 
 ## File map
 
 | File | Responsibility |
 | --- | --- |
-| [CaffeineApp.swift](Caffeine/Sources/App/CaffeineApp.swift) | AppKit lifecycle, duplicate-instance check, reopen handling and diagnostics |
-| [StatusBarController.swift](Caffeine/Sources/Support/StatusBarController.swift) | Menu actions, common-mode one-second polling, power/sleep notifications and UI updates |
-| [AwardsWindowController.swift](Caffeine/Sources/Support/AwardsWindowController.swift) | Retained native window, SwiftUI cards, cached grayscale locked images |
-| [CupIcon.swift](Caffeine/Sources/Support/CupIcon.swift) | App-owned steaming/plain status artwork |
-| [AwakeController.swift](Caffeine/Core/AwakeController.swift) | Owned IDs, independent controls, filtered external CLI observations and interval reconciliation |
-| [PowerAssertions.swift](Caffeine/Core/PowerAssertions.swift) | IOKit create/release, active assertion snapshots, power-source classification, CLI identity/start metadata |
-| [AwakeSession.swift](Caffeine/Core/AwakeSession.swift) | Catalog validation, elapsed progress, threshold unlocks and earned-ID persistence |
-| [CLIActivityClock.swift](Caffeine/Core/CLIActivityClock.swift) | Monotonic current CLI interval, recovered start, overlap continuity and persisted claims |
-| [AwakePreferences.swift](Caffeine/Core/AwakePreferences.swift) | Saved independent control choices |
-| [RuntimeCheck.swift](Caffeine/Sources/Support/RuntimeCheck.swift) | Isolated packaged assertion and native-view diagnostics |
-| [Tests](Caffeine/Tests) | Failure, boundary, persistence, CLI identity/overlap/expiry and policy tests |
-| [catalog.json](Caffeine/Resources/Badges/catalog.json) | Single ordered source for badge names, thresholds and image filenames |
+| [CaffeinateUIApp.swift](CaffeinateUI/Sources/App/CaffeinateUIApp.swift) | AppKit lifecycle, duplicate-instance check, reopen handling and diagnostics |
+| [StatusBarController.swift](CaffeinateUI/Sources/Support/StatusBarController.swift) | Menu actions, common-mode one-second polling, power/sleep notifications and UI updates |
+| [AwardsWindowController.swift](CaffeinateUI/Sources/Support/AwardsWindowController.swift) | Retained native window, SwiftUI cards, cached grayscale locked images |
+| [CupIcon.swift](CaffeinateUI/Sources/Support/CupIcon.swift) | App-owned steaming/plain status artwork |
+| [AwakeController.swift](CaffeinateUI/Core/AwakeController.swift) | Owned IDs, independent controls, filtered external CLI observations and interval reconciliation |
+| [PowerAssertions.swift](CaffeinateUI/Core/PowerAssertions.swift) | IOKit create/release, active assertion snapshots, power-source classification, CLI identity/start metadata |
+| [AwakeSession.swift](CaffeinateUI/Core/AwakeSession.swift) | Catalog validation, elapsed progress, threshold unlocks and earned-ID persistence |
+| [CLIActivityClock.swift](CaffeinateUI/Core/CLIActivityClock.swift) | Monotonic current CLI interval, recovered start, overlap continuity and persisted claims |
+| [AwakePreferences.swift](CaffeinateUI/Core/AwakePreferences.swift) | Saved independent control choices |
+| [RuntimeCheck.swift](CaffeinateUI/Sources/Support/RuntimeCheck.swift) | Isolated packaged assertion and native-view diagnostics |
+| [Tests](CaffeinateUI/Tests) | Failure, boundary, persistence, CLI identity/overlap/expiry and policy tests |
+| [catalog.json](CaffeinateUI/Resources/Badges/catalog.json) | Single ordered source for badge names, thresholds and image filenames |
 | [script](script) | Build, install/recovery, optional login registration and verification tools |
 
 ## Invariants to preserve
@@ -39,8 +39,8 @@ Run `./script/test.sh`, `python3 script/audit_source.py` and `git diff --check`.
 The packaged isolated UI diagnostic is:
 
 ```sh
-./script/build_and_run.sh Caffeine --build-only
-open -W dist/Caffeine.app --args --awards-ui-check /tmp/caffeine-ui-check
+./script/build_and_run.sh CaffeinateUI --build-only
+open -W "dist/Caffeinate UI.app" --args --awards-ui-check /tmp/caffeine-ui-check
 ```
 
 It renders native views at 4:59 and 5:00 with in-memory progress and no real defaults. The `--self-test` path also avoids real award defaults. Normal launch restores real local choices/awards; `--show-awards` opens the live window. Verify live readability, grey/full-colour states, Close/reopen and CLI start/expiry separately. Do not force sleep/login or power-source changes during other ongoing work.
@@ -49,6 +49,6 @@ Some nested execution environments cannot run SwiftPM's manifest sandbox or regi
 
 ## Repository scope and documentation
 
-Current HEAD publishes Caffeine only; older commits are retained. Local ignored remnants of the former app and recovery backups are not part of current tracked contents. Keep the existing repository URL and published history unless a migration is separately authorized.
+Current HEAD publishes Caffeinate UI only; older commits are retained. Local ignored remnants of the former app and recovery backups are not part of current tracked contents. Keep the existing repository URL and published history unless a migration is separately authorized.
 
 Keep README claims grounded in source and checks. Use readable Markdown, descriptive links and contextual image alt text. The documentation brief follows [Google's people-first content guidance](https://developers.google.com/search/docs/fundamentals/creating-helpful-content) and [W3C writing accessibility guidance](https://www.w3.org/WAI/tips/writing/), via the Prompts seo-optimise workflow. GitHub manages crawling/rendering; these editorial changes make no indexing, ranking or AI citation guarantees. Do not add website infrastructure or mandatory llms.txt for this repository.

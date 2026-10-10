@@ -9,5 +9,5 @@ if [[ -f "$MACROS" ]]; then
   EXTRA=(-Xswiftc -load-plugin-library -Xswiftc "$MACROS")
 fi
 swift test --jobs 2 "${EXTRA[@]}"
-./script/build_and_run.sh Caffeine --build-only
-./dist/Caffeine.app/Contents/MacOS/Caffeine --self-test
+./script/build_and_run.sh CaffeinateUI --build-only
+./"dist/Caffeinate UI.app/Contents/MacOS/CaffeinateUI" --self-test

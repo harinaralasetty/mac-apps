@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 MODE="${1:-status}"
-APP_NAME="${2:-Caffeine}"
-case "$MODE" in enable|disable|status) ;; *) echo 'Usage: login_items.sh enable|disable|status [Caffeine]' >&2; exit 2;; esac
-[[ "$APP_NAME" == Caffeine ]] || { echo "This script manages Caffeine only." >&2; exit 2; }
-APPS=(Caffeine)
+APP_NAME="${2:-CaffeinateUI}"
+case "$MODE" in enable|disable|status) ;; *) echo 'Usage: login_items.sh enable|disable|status [CaffeinateUI]' >&2; exit 2;; esac
+[[ "$APP_NAME" == CaffeinateUI ]] || { echo "This script manages Caffeinate UI only." >&2; exit 2; }
+APPS=(CaffeinateUI)
 USER_DOMAIN="gui/$(id -u)"
 for APP in "${APPS[@]}"; do
-  LABEL="personal.harinaralasetty.${APP}.login"
+  LABEL="personal.harinaralasetty.Caffeine.login"
   PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-  APP_PATH="${CAFFEINE_INSTALL_DIR:-/Applications}/$APP.app"
-  if [[ -z "${CAFFEINE_INSTALL_DIR:-}" && -f "$PLIST" ]]; then
+  APP_PATH="${CAFFEINATE_UI_INSTALL_DIR:-/Applications}/Caffeinate UI.app"
+  if [[ "$MODE" != enable && -z "${CAFFEINATE_UI_INSTALL_DIR:-}" && -f "$PLIST" ]]; then
     APP_PATH="$(/usr/bin/python3 - "$PLIST" <<'PY'
 import plistlib, sys
 with open(sys.argv[1], 'rb') as file:
@@ -31,7 +31,10 @@ PY
 import sys, plistlib
 with open(sys.argv[1], 'rb') as file: value = plistlib.load(file)
 assert value['Label'] == sys.argv[2]
-assert value['ProgramArguments'] == ['/usr/bin/open', '-a', sys.argv[3]]
+desired = sys.argv[3]
+from pathlib import Path
+legacy = str(Path(desired).parent/'Caffeine.app')
+assert value['ProgramArguments'] in [['/usr/bin/open', '-a', desired], ['/usr/bin/open', '-a', legacy]]
 assert value.get('RunAtLoad') is True
 PY
       else
@@ -42,6 +45,14 @@ with open(sys.argv[1], 'xb') as file:
 PY
         chmod 644 "$PLIST"
       fi
+      /usr/bin/python3 - "$PLIST" "$APP_PATH" <<'PYJOB'
+import sys, plistlib
+from pathlib import Path
+p=Path(sys.argv[1]); value=plistlib.loads(p.read_bytes())
+value['ProgramArguments']=['/usr/bin/open','-a',sys.argv[2]]
+p.write_bytes(plistlib.dumps(value))
+PYJOB
+      if /bin/launchctl print "$USER_DOMAIN/$LABEL" >/dev/null 2>&1; then /bin/launchctl bootout "$USER_DOMAIN/$LABEL"; fi
       /bin/launchctl enable "$USER_DOMAIN/$LABEL"
       if ! /bin/launchctl print "$USER_DOMAIN/$LABEL" >/dev/null 2>&1; then
         /bin/launchctl bootstrap "$USER_DOMAIN" "$PLIST"

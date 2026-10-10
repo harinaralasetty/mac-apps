@@ -1,8 +1,8 @@
 import AppKit
-import CaffeineCore
+import CaffeinateUICore
 
 @main @MainActor
-enum CaffeineApp {
+enum CaffeinateUIApp {
     static func main() {
         if let index = CommandLine.arguments.firstIndex(of: "--awards-ui-check"), CommandLine.arguments.count > index + 1 {
             do {
@@ -12,7 +12,7 @@ enum CaffeineApp {
         }
         if CommandLine.arguments.contains("--self-test") {
             do { try RuntimeCheck.run(); exit(0) }
-            catch { FileHandle.standardError.write(Data("Caffeine self-test failed: \(error)\n".utf8)); exit(1) }
+            catch { FileHandle.standardError.write(Data("Caffeinate UI self-test failed: \(error)\n".utf8)); exit(1) }
         }
         let app = NSApplication.shared
         // One menu-bar instance; restore preferences, never previous assertion IDs.

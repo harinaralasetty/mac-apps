@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import CaffeineCore
+@testable import CaffeinateUICore
 
 @MainActor private final class Clock {
     var time: TimeInterval = 10000
@@ -66,7 +66,7 @@ import Testing
 }
 
 @MainActor @Test func CLIClaimPersistenceRestoresOverlapWithoutAddingIntervals() throws {
-    let suite = "CaffeineCLIClaimsTests.\(UUID().uuidString)"
+    let suite = "Caffeinate UICLIClaimsTests.\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suite)!
     defer { defaults.removePersistentDomain(forName: suite) }
     let clock = Clock()

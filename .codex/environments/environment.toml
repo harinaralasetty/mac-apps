@@ -1,8 +1,8 @@
 version = 1
-name = "Caffeine"
+name = "Caffeinate UI"
 [setup]
 script = ""
 [[actions]]
 name = "Run"
 icon = "run"
-command = "./script/build_and_run.sh Caffeine"
+command = "./script/build_and_run.sh CaffeinateUI"

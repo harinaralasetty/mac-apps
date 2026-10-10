@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import CaffeineCore
+@testable import CaffeinateUICore
 
 @MainActor
 private final class FakeBackend: AssertionBackend {
@@ -62,7 +62,7 @@ private final class FakeBackend: AssertionBackend {
 }
 
 @MainActor @Test func preferencesRestoreIndependentChoicesAndQuitPreservesThem() throws {
-    let suite = "CaffeineTests.\(UUID().uuidString)"
+    let suite = "Caffeinate UITests.\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suite)!
     defer { defaults.removePersistentDomain(forName: suite) }
     let preferences = AwakePreferences(defaults: defaults)
@@ -81,7 +81,7 @@ private final class FakeBackend: AssertionBackend {
 }
 
 @MainActor @Test func failedActionDoesNotSaveIncorrectPreference() throws {
-    let suite = "CaffeineTests.\(UUID().uuidString)"
+    let suite = "Caffeinate UITests.\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suite)!
     defer { defaults.removePersistentDomain(forName: suite) }
     let preferences = AwakePreferences(defaults: defaults)

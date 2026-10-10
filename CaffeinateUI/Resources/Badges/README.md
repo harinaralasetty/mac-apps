@@ -1,4 +1,4 @@
-# Caffeine award badge artwork
+# Caffeinate UI award badge artwork
 
 Twelve distinct transparent PNG medallions in the approved chronological order, ending with Caffeine Overdose at 365 days. Their exact titles, ranks and thresholds are in catalog.json. One day means 24 hours.
 

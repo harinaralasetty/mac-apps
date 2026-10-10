@@ -13,9 +13,9 @@ verification/
 __pycache__/
 *.pyc
 
-Caffeine/Resources/*.iconset/
+CaffeinateUI/Resources/*.iconset/
 
-# Preserve former app source locally; this repository now publishes Caffeine.
+# Preserve former app source locally; this repository now publishes Caffeinate UI.
 /MicMute/
 /script/test_micmute.py
-/Caffeine/evidence/
+/CaffeinateUI/evidence/

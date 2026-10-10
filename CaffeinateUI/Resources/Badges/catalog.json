@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "time_basis": "One current Caffeine or qualifying CLI session. Earlier elapsed time of a still-running CLI assertion counts and may include sleep; overlaps count once. App-only sleep or no qualifying activity resets progress. Earned awards persist.",
+  "time_basis": "One current Caffeinate UI or qualifying CLI session. Earlier elapsed time of a still-running CLI assertion counts and may include sleep; overlaps count once. App-only sleep or no qualifying activity resets progress. Earned awards persist.",
   "day_seconds": 86400,
   "awards": [
     {

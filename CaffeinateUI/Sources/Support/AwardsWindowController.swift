@@ -1,11 +1,11 @@
 import AppKit
 import SwiftUI
-import CaffeineCore
+import CaffeinateUICore
 import CoreImage
 
 @MainActor
 final class AwardsPresentation: ObservableObject {
-    let awards: [CaffeineAward]
+    let awards: [CaffeinateUIAward]
     let images: [String: NSImage]
     let lockedImages: [String: NSImage]
     @Published var earnedIDs: Set<String> = []
@@ -13,7 +13,7 @@ final class AwardsPresentation: ObservableObject {
     @Published var duration = "00:00:00"
     @Published var cliDuration: String?
 
-    init(awards: [CaffeineAward]) {
+    init(awards: [CaffeinateUIAward]) {
         self.awards = awards
         var images: [String: NSImage] = [:]
         var lockedImages: [String: NSImage] = [:]
@@ -55,7 +55,7 @@ struct AwardsView: View {
                     Text("Award progress: \(presentation.duration). Includes earlier time from the current CLI session, which may include sleep. Overlaps count once.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                Text("Caffeine and qualifying CLI caffeinate sessions count. App-only sleep or no qualifying activity resets progress; earned awards stay saved.")
+                Text("Caffeinate UI and qualifying CLI caffeinate sessions count. App-only sleep or no qualifying activity resets progress; earned awards stay saved.")
                     .font(.caption).foregroundStyle(.secondary)
             }.padding([.horizontal, .top], 20)
             ScrollView {
@@ -69,7 +69,7 @@ struct AwardsView: View {
             .background(Color(nsColor: .windowBackgroundColor))
     }
 
-    private func card(_ award: CaffeineAward) -> some View {
+    private func card(_ award: CaffeinateUIAward) -> some View {
         let earned = presentation.earnedIDs.contains(award.id)
         let progress = min(1, presentation.elapsed / award.thresholdSeconds)
         return VStack(spacing: 8) {
@@ -102,7 +102,7 @@ struct AwardsView: View {
 final class AwardsWindowController {
     let presentation: AwardsPresentation
     private(set) var window: NSWindow?
-    init(awards: [CaffeineAward]) { presentation = AwardsPresentation(awards: awards) }
+    init(awards: [CaffeinateUIAward]) { presentation = AwardsPresentation(awards: awards) }
 
     @discardableResult
     func show(activate: Bool = true) -> NSWindow {
@@ -110,7 +110,7 @@ final class AwardsWindowController {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 640),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable],
                                   backing: .buffered, defer: false)
-            window.title = "Caffeine Awards"
+            window.title = "Caffeinate UI Awards"
             window.isReleasedWhenClosed = false
             window.isRestorable = false
             window.contentMinSize = NSSize(width: 400, height: 420)

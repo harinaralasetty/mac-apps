@@ -14,7 +14,7 @@ public struct PowerAssertions: AssertionBackend {
     public func create(_ mode: AwakeMode) throws -> UInt32 {
         var id: IOPMAssertionID = 0
         let type = mode == .system ? kIOPMAssertionTypePreventUserIdleSystemSleep : kIOPMAssertionTypePreventUserIdleDisplaySleep
-        let result = IOPMAssertionCreateWithName(type as CFString, IOPMAssertionLevel(kIOPMAssertionLevelOn), "Caffeine: \(mode.rawValue) awake" as CFString, &id)
+        let result = IOPMAssertionCreateWithName(type as CFString, IOPMAssertionLevel(kIOPMAssertionLevelOn), "Caffeinate UI: \(mode.rawValue) awake" as CFString, &id)
         guard result == kIOReturnSuccess else { throw PowerError(operation: "Keep \(mode.rawValue) awake", code: result) }
         return id
     }

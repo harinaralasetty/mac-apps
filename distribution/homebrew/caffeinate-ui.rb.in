@@ -1,0 +1,21 @@
+# Draft only. Signed release URL, checksum and clean-system validation are pending.
+# Do not copy into a tap or install until every REQUIRED value is replaced.
+cask "caffeinate-ui" do
+  version "RELEASE_VERSION_REQUIRED"
+  sha256 "FINAL_STAPLED_ARCHIVE_SHA256_REQUIRED"
+
+  url "PUBLISHED_IMMUTABLE_GITHUB_RELEASE_ASSET_URL_REQUIRED"
+  name "Caffeinate UI"
+  desc "Keep-awake controls, CLI session timer and persistent coffee awards"
+  homepage "https://github.com/harinaralasetty/caffeinate-ui"
+
+  conflicts_with cask: ["caffeine", "domzilla-caffeine"]
+  # Initial architecture suggestion matches the current arm64-only local build.
+  # Expand only after building and testing an Intel or universal release.
+  depends_on arch: :arm64
+  depends_on macos: ">= :ventura"
+
+  app "Caffeinate UI.app"
+  # No zap: preserve earned awards and preferences on ordinary uninstall.
+  # No launch, login registration, Gatekeeper bypass or forced replacement.
+end

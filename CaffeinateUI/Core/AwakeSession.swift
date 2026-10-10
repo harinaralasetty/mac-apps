@@ -1,6 +1,6 @@
 import Foundation
 
-public struct CaffeineAward: Decodable, Equatable, Sendable {
+public struct CaffeinateUIAward: Decodable, Equatable, Sendable {
     public let id: String
     public let title: String
     public let thresholdSeconds: TimeInterval
@@ -17,11 +17,11 @@ public struct CaffeineAward: Decodable, Equatable, Sendable {
 public enum AwardCatalog {
     private struct Catalog: Decodable {
         let schemaVersion: Int
-        let awards: [CaffeineAward]
+        let awards: [CaffeinateUIAward]
         enum CodingKeys: String, CodingKey { case schemaVersion = "schema_version", awards }
     }
     public enum Failure: Error { case invalidCatalog }
-    public static func read(from url: URL) throws -> [CaffeineAward] {
+    public static func read(from url: URL) throws -> [CaffeinateUIAward] {
         let catalog = try JSONDecoder().decode(Catalog.self, from: Data(contentsOf: url))
         guard catalog.schemaVersion == 1, !catalog.awards.isEmpty else { throw Failure.invalidCatalog }
         var ids: Set<String> = []
@@ -44,14 +44,14 @@ public enum AwardCatalog {
 public final class AwakeSession {
     private static let earnedKey = "awards.earnedIDs.v1"
     private static let secondsPerDay = 86400
-    public let awards: [CaffeineAward]
+    public let awards: [CaffeinateUIAward]
     public private(set) var earnedIDs: Set<String>
     private let defaults: UserDefaults?
     private let now: () -> TimeInterval
     private var startedAt: TimeInterval?
     private var sleeping = false
 
-    public init(awards: [CaffeineAward], defaults: UserDefaults? = nil,
+    public init(awards: [CaffeinateUIAward], defaults: UserDefaults? = nil,
                 now: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) {
         self.awards = awards
         self.defaults = defaults

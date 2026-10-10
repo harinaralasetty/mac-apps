@@ -1,14 +1,14 @@
 import Foundation
 import Testing
-@testable import CaffeineCore
+@testable import CaffeinateUICore
 
 @MainActor private final class SessionClock { var seconds: TimeInterval = 100 }
 private let badgeDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("Resources/Badges")
-private func readAwards() throws -> [CaffeineAward] {
+private func readAwards() throws -> [CaffeinateUIAward] {
     try AwardCatalog.read(from: badgeDirectory.appendingPathComponent("catalog.json"))
 }
 
-// Catches off time or another process incorrectly earning Caffeine awards.
+// Catches off time or another process incorrectly earning CaffeinateUI awards.
 @MainActor @Test func inactiveTimeDoesNotCount() throws {
     let clock = SessionClock()
     let session = AwakeSession(awards: try readAwards(), now: { clock.seconds })
@@ -60,7 +60,7 @@ private func readAwards() throws -> [CaffeineAward] {
 
 // Catches earned badge loss or accidentally restoring a previous streak.
 @MainActor @Test func relaunchRestoresAwardsButNeverElapsed() throws {
-    let suite = "CaffeineAwardsTests.\(UUID().uuidString)"
+    let suite = "Caffeinate UIAwardsTests.\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suite)!
     defer { defaults.removePersistentDomain(forName: suite) }
     let clock = SessionClock()

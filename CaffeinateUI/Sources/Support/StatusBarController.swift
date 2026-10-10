@@ -1,5 +1,5 @@
 import AppKit
-import CaffeineCore
+import CaffeinateUICore
 
 @MainActor
 final class StatusBarController: NSObject, NSMenuDelegate {
@@ -20,7 +20,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     override init() {
         var catalogError: String?
-        let awards: [CaffeineAward]
+        let awards: [CaffeinateUIAward]
         do {
             guard let resources = Bundle.main.resourceURL else { throw AwardCatalog.Failure.invalidCatalog }
             awards = try AwardCatalog.read(from: resources.appendingPathComponent("Badges/catalog.json"))
@@ -34,9 +34,9 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         super.init()
         lastError = catalogError
         menu.delegate = self
-        statusRow = add("Caffeine: normal mode")
+        statusRow = add("Caffeinate UI: normal mode")
         streakRow = add("Awake streak: 00:00:00")
-        streakRow.toolTip = "One uninterrupted session from Caffeine or CLI caffeinate. No qualifying assertions, quit/relaunch or system sleep resets it. Display sleep and screen lock do not."
+        streakRow.toolTip = "One uninterrupted session from Caffeinate UI or CLI caffeinate. No qualifying assertions, quit/relaunch or system sleep resets it. Display sleep and screen lock do not."
         awardsWindow = AwardsWindowController(awards: session.awards)
         awardsRow = add("Show Awards…", action: #selector(showAwards))
         menu.addItem(.separator())
@@ -50,8 +50,8 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         externalDisplayRow = add("Other display assertions: none")
         externalRow = add("Other Sleep Assertions")
         menu.addItem(.separator())
-        add("About Caffeine", action: #selector(about))
-        add("Quit Caffeine", action: #selector(quit), key: "q")
+        add("About Caffeinate UI", action: #selector(about))
+        add("Quit Caffeinate UI", action: #selector(quit), key: "q")
         item.menu = menu
         item.button?.imagePosition = .imageOnly
         do { try awake.restorePreferences() }
@@ -85,7 +85,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     private func refreshSession() {
         guard let session = awake.session else { return }
         streakRow.title = awake.cliClock.durationLabel.map { "CLI session: \($0)" } ?? "Awake streak: \(session.durationLabel)"
-        streakRow.toolTip = "Current CLI assertion time counts toward awards, including time before Caffeine opened. Recovered CLI time may include system sleep. Overlaps count once."
+        streakRow.toolTip = "Current CLI assertion time counts toward awards, including time before Caffeinate UI opened. Recovered CLI time may include system sleep. Overlaps count once."
         awardsRow.title = "Show Awards… (\(session.earnedIDs.count)/\(session.awards.count))"
         awardsWindow.presentation.update(from: session)
         awardsWindow.presentation.cliDuration = awake.cliClock.durationLabel
@@ -106,7 +106,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             awake.observeExternalAssertions([])
         }
         refreshSession()
-        let title = awake.isActive ? "Caffeine: On" : (awake.isSessionActive ? "Caffeine: CLI caffeinate active" : "Caffeine: Off")
+        let title = awake.isActive ? "Caffeinate UI: On" : (awake.isSessionActive ? "Caffeinate UI: CLI caffeinate active" : "Caffeinate UI: Off")
         statusRow.title = title
         systemRow.state = awake.isEnabled(.system) ? .on : .off
         displayRow.state = awake.isEnabled(.display) ? .on : .off
@@ -120,7 +120,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             externalSystemRow.title = system > 0 ? "Other apps also keep system awake (\(system))" : "No other system sleep assertions"
             externalDisplayRow.title = display > 0 ? "Other apps also keep display awake (\(display))" : "No other display sleep assertions"
             if !awake.isSessionActive && (system > 0 || display > 0) {
-                statusRow.title = "Caffeine: Off — other apps prevent idle sleep"
+                statusRow.title = "Caffeinate UI: Off — other apps prevent idle sleep"
             }
             for entry in entries {
                 let process = NSRunningApplication(processIdentifier: entry.pid)?.localizedName ?? (entry.name == "caffeinate command-line tool" ? "caffeinate" : "PID \(entry.pid)")
@@ -161,8 +161,8 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func toggleDisplay() { perform { try awake.set(.display, enabled: !awake.isEnabled(.display)) } }
     @objc private func about() {
         let alert = NSAlert()
-        alert.messageText = "Caffeine"
-        alert.informativeText = "Steam means Caffeine or CLI caffeinate holds a system or display sleep assertion. Turn On keeps the system awake; the display control is separate. Turn Off and Quit release only Caffeine's assertions. Other apps may still prevent idle sleep.\n\nAwake streak measures one uninterrupted session while either control or a CLI caffeinate system/display assertion is active. No qualifying assertions, Quit/relaunch or system sleep resets it; display sleep and locking do not. Earned awards stay saved locally.\n\nYour choices are restored after relaunch. Quit releases assertions without changing those choices. Login startup is managed by the project's login script. Screen locking and security settings remain in effect. Lid closure, low battery and forced sleep can override idle-sleep assertions."
+        alert.messageText = "Caffeinate UI"
+        alert.informativeText = "Steam means Caffeinate UI or CLI caffeinate holds a system or display sleep assertion. Turn On keeps the system awake; the display control is separate. Turn Off and Quit release only Caffeinate UI's assertions. Other apps may still prevent idle sleep.\n\nAwake streak measures one uninterrupted session while either control or a CLI caffeinate system/display assertion is active. No qualifying assertions, App-only quit/relaunch or system sleep resets progress. A current CLI session recovers earlier elapsed time, including possible sleep; overlaps count once. Display sleep and locking do not reset progress. Earned awards stay saved locally.\n\nYour choices are restored after relaunch. Quit releases assertions without changing those choices. Login startup is managed by the project's login script. Screen locking and security settings remain in effect. Lid closure, low battery and forced sleep can override idle-sleep assertions."
         alert.runModal()
     }
     @objc private func quit() { NSApp.terminate(nil) }
