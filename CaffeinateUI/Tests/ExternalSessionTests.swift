@@ -71,6 +71,56 @@ private func cli(_ pid: Int32 = 100, type: String = "PreventUserIdleSystemSleep"
     #expect(session.elapsed == 0 && session.earnedIDs.isEmpty)
 }
 
+// Safe while the user's display is asleep: never request -d, -u or display mode.
+@MainActor @Test func realSystemOnlyCLIAppOffAndExpiry() async throws {
+    let child = Process()
+    child.executableURL = URL(fileURLWithPath: "/usr/bin/caffeinate")
+    child.arguments = ["-i", "-t", "3"]
+    let controller = AwakeController(backend: PowerAssertions(), session: AwakeSession(awards: []))
+    defer {
+        try? controller.turnOff()
+        if child.isRunning { child.terminate(); child.waitUntilExit() }
+    }
+    func owned() throws -> [SleepAssertion] {
+        try AssertionSnapshot.read().entries.filter { $0.pid == getpid() }
+    }
+    func cliEntries() throws -> [SleepAssertion] {
+        try AssertionSnapshot.read().entries.filter { $0.pid == child.processIdentifier }
+    }
+    try controller.set(.system, enabled: true)
+    #expect(controller.isSessionActive && controller.isActive)
+    let appOnly = try owned()
+    #expect(appOnly.contains { $0.keepsSystemAwake })
+    #expect(!appOnly.contains { $0.keepsDisplayAwake })
+    try controller.turnOff()
+    #expect(!controller.isSessionActive && !controller.isActive)
+    let appOff = try owned()
+    #expect(appOff.isEmpty)
+    try child.run()
+    try await Task.sleep(for: .milliseconds(200))
+    let external = try cliEntries()
+    #expect(external.contains { $0.keepsSystemAwake })
+    #expect(!external.contains { $0.keepsDisplayAwake })
+    controller.observeExternalAssertions(external)
+    #expect(controller.isSessionActive && !controller.isActive)
+    try controller.set(.system, enabled: true)
+    try controller.turnOff()
+    #expect(controller.isSessionActive && !controller.isActive)
+    let mixedOff = try owned(), cliStillActive = try cliEntries()
+    #expect(mixedOff.isEmpty)
+    #expect(cliStillActive == external)
+    let reopened = AwakeController(backend: TestBackend())
+    reopened.observeExternalAssertions(external)
+    #expect(reopened.isSessionActive && !reopened.isActive)
+    try await Task.sleep(for: .milliseconds(3100))
+    let ended = try cliEntries()
+    #expect(!child.isRunning && ended.isEmpty)
+    controller.observeExternalAssertions(ended)
+    reopened.observeExternalAssertions(ended)
+    #expect(!controller.isSessionActive && !reopened.isSessionActive)
+    #expect(controller.session?.elapsed == 0)
+}
+
 // Every process here is created, tracked and cleaned up by this test. No user
 // preferences or earned awards are read or written. Never signal existing PIDs.
 @MainActor @Test func realCLIFlagsExpiryAndMultipleProcesses() async throws {

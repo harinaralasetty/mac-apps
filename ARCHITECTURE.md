@@ -36,6 +36,8 @@ Start with the [README](README.md) for product behavior and supported commands. 
 
 Run `./script/test.sh`, `python3 script/audit_source.py` and `git diff --check`. Use fake clocks for long thresholds and a unique UserDefaults suite with cleanup for persistence. Real CLI tests may terminate only Process instances they created. Build-only should not launch staging over an installed app.
 
+When the display must stay asleep, use `./script/test.sh --no-display`. It skips the CLI test that requests `-d`/`-u` and the packaged display-assertion self-test. The system-only live test verifies app On/Off, mixed app/CLI ownership, relaunch observation and natural CLI expiry without display assertions. This does not replace visual menu/icon verification or the full display-control integration test.
+
 The packaged isolated UI diagnostic is:
 
 ```sh
