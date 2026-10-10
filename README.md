@@ -4,7 +4,7 @@
 
 **Keep your Mac awake. Keep your agents running.**
 
-Built for the agent era: Hari made Caffeinate UI for long-running local coding agents, builds and terminal workflows. It manages macOS idle-sleep assertions and shows active `caffeinate` sessions, with twelve coffee awards along the way. Caffeinate UI uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.5 (build 6)**.
+Built for the agent era: Hari made Caffeinate UI for long-running local coding agents, builds and terminal workflows. It manages macOS idle-sleep assertions and shows active `caffeinate` sessions, with twelve coffee awards along the way. Caffeinate UI uses Swift, AppKit, SwiftUI and IOKit with no third-party package dependencies. Current source version: **1.6 (build 7)**.
 
 - Control system and display idle sleep independently.
 - See a session timer for app-owned and qualifying CLI assertions.
@@ -13,7 +13,7 @@ Built for the agent era: Hari made Caffeinate UI for long-running local coding a
 
 ![Actual Caffeinate UI Awards window showing five full-colour earned badges and a grey locked three-day milestone](docs/screenshots/awards.jpg)
 
-Actual installed 1.5 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 16 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown.
+Installed 1.5 app, captured on 10 October 2026. Five awards came from a qualifying CLI session of roughly 2 days 16 hours. This elapsed time may include system sleep; the screenshot is not an isolated demonstration or proof of continuous awake time. Only app content is shown. Source and installed app are now 1.6; fresh native menu screenshots are pending visual verification.
 
 ## Requirements
 
@@ -55,12 +55,12 @@ Disabling startup does not quit Caffeinate UI. When moving installations, disabl
 | Turn On | Enables system idle-sleep prevention |
 | Keep System Awake | Toggles the app's system assertion |
 | Keep Display Awake | Toggles the app's display assertion independently |
-| Turn Off | Releases only Caffeinate UI-owned assertions |
+| Turn Off Caffeinate UI | Releases only Caffeinate UI-owned assertions |
 | CLI session / Awake streak | Shows current elapsed time |
 | Show Awards… | Opens or raises one retained native Awards window |
 | Other Sleep Assertions | Explains other active system/display assertions |
 
-A steaming cup means Caffeinate UI or qualifying CLI activity is active. A plain cup means neither is active. App choices persist and restore on launch; assertion IDs are always acquired afresh. Turning Caffeinate UI off never stops external CLI processes. Lid closure, low battery, forced sleep and macOS power policy can override idle-sleep prevention. Caffeinate UI does not supervise or restart agents, prevent crashes or network outages, or guarantee uninterrupted jobs. Keeping the system or display awake can increase battery use; enable only the controls your task needs.
+A steaming cup means Caffeinate UI or qualifying CLI activity is active. A plain cup means neither is active. App choices persist and restore on launch; assertion IDs are always acquired afresh. Turning Caffeinate UI off never stops external CLI processes. When a CLI session remains active, the menu says “Off — CLI caffeinate active” and steam stays visible. System and display controls remain independent. Lid closure, low battery, forced sleep and macOS power policy can override idle-sleep prevention. Caffeinate UI does not supervise or restart agents, prevent crashes or network outages, or guarantee uninterrupted jobs. Keeping the system or display awake can increase battery use; enable only the controls your task needs.
 
 ## Timer and awards
 
@@ -84,10 +84,14 @@ App-only progress resets when no qualifying activity remains, on quit/relaunch, 
 | Bean There, Done That | 14 days |
 | Your Mac Is Legally a Café | 30 days |
 | Roast Level: Critical | 60 days |
-| Legally an Espresso Machine | 90 days |
+| Head Barista | 90 days |
 | Caffeine Overdose | 365 days |
 
 A day is 24 hours. The [badge catalog](CaffeinateUI/Resources/Badges/catalog.json) defines ordered thresholds and artwork; the [badge gallery](CaffeinateUI/Resources/Badges/README.md) shows all twelve images.
+
+![All twelve current award assets and catalog labels, including Head Barista at 90 days](docs/screenshots/all-awards.jpg)
+
+The collection above renders the actual PNG assets with separate catalog labels. Regenerate the HTML cards with `python3 script/generate_badge_preview.py`; `--check` detects catalog drift.
 
 ## Build and test
 
@@ -109,6 +113,6 @@ Maintained by [Hari Naralasetty](https://github.com/harinaralasetty). Report rep
 
 ## Homebrew preparation
 
-The [distribution plan](distribution/README.md) and draft cask are preparation only. A signed, notarized release and tested tap are still pending; no Homebrew installation command for this app is published.
+The [distribution plan](distribution/README.md) and draft cask are preparation only. A published versioned release and tested tap are still pending; Developer ID signing and notarization are recommended for public binary first launch, rather than universal own-tap requirements; no Homebrew installation command for this app is published.
 
 The rename keeps `personal.harinaralasetty.Caffeine` as the bundle identifier and the original login-job label so existing awards and settings survive. The installer backs up and migrates this project's old `Caffeine.app` only after checking its identity, and updates an already configured login job to `Caffeinate UI.app`. Another vendor's bundle is never overwritten.

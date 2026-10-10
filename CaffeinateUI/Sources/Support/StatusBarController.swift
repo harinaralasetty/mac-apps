@@ -41,7 +41,8 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         awardsRow = add("Show Awards…", action: #selector(showAwards))
         menu.addItem(.separator())
         add("Turn On", action: #selector(turnOn), key: "a")
-        add("Turn Off", action: #selector(turnOff), key: "o")
+        let off = add("Turn Off Caffeinate UI", action: #selector(turnOff), key: "o")
+        off.toolTip = "Releases this app's system and display assertions. Your CLI caffeinate sessions keep running."
         menu.addItem(.separator())
         systemRow = add("Keep System Awake", action: #selector(toggleSystem))
         displayRow = add("Keep Display Awake", action: #selector(toggleDisplay))
@@ -94,6 +95,12 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     @objc private func systemWillSleep() { awake.session?.systemWillSleep(); refreshSession() }
     @objc private func systemDidWake() { awake.session?.systemDidWake(active: awake.isSessionActive); refresh() }
 
+    static func statusTitle(appActive: Bool, cliActive: Bool, otherActive: Bool = false) -> String {
+        if cliActive { return "Caffeinate UI: \(appActive ? "On" : "Off") — CLI caffeinate active" }
+        if appActive { return "Caffeinate UI: On" }
+        return otherActive ? "Caffeinate UI: Off — other apps prevent idle sleep" : "Caffeinate UI: Off"
+    }
+
     private func refresh() {
         var entries: [SleepAssertion] = []
         var snapshotError = false
@@ -106,22 +113,19 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             awake.observeExternalAssertions([])
         }
         refreshSession()
-        let title = awake.isActive ? "Caffeinate UI: On" : (awake.isSessionActive ? "Caffeinate UI: CLI caffeinate active" : "Caffeinate UI: Off")
-        statusRow.title = title
+        let cliActive = !awake.externalCaffeinate.isEmpty
+        statusRow.title = Self.statusTitle(appActive: awake.isActive, cliActive: cliActive)
         systemRow.state = awake.isEnabled(.system) ? .on : .off
         displayRow.state = awake.isEnabled(.display) ? .on : .off
         item.button?.image = CupIcon.make(steaming: awake.isSessionActive)
-        item.button?.toolTip = "\(title). App controls: system \(awake.isEnabled(.system) ? "on" : "off"), display \(awake.isEnabled(.display) ? "on" : "off")."
-        item.button?.setAccessibilityLabel(title)
         let details = NSMenu()
         if !snapshotError {
             let system = entries.filter(\.keepsSystemAwake).count
             let display = entries.filter(\.keepsDisplayAwake).count
             externalSystemRow.title = system > 0 ? "Other apps also keep system awake (\(system))" : "No other system sleep assertions"
             externalDisplayRow.title = display > 0 ? "Other apps also keep display awake (\(display))" : "No other display sleep assertions"
-            if !awake.isSessionActive && (system > 0 || display > 0) {
-                statusRow.title = "Caffeinate UI: Off — other apps prevent idle sleep"
-            }
+            statusRow.title = Self.statusTitle(appActive: awake.isActive, cliActive: cliActive,
+                                             otherActive: system > 0 || display > 0)
             for entry in entries {
                 let process = NSRunningApplication(processIdentifier: entry.pid)?.localizedName ?? (entry.name == "caffeinate command-line tool" ? "caffeinate" : "PID \(entry.pid)")
                 let mode = entry.keepsDisplayAwake ? "display" : "system"
@@ -141,6 +145,9 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         }
         externalRow.submenu = details
         externalRow.isEnabled = true
+        let steamHelp = cliActive ? " Steam remains while CLI caffeinate is active; Turn Off Caffeinate UI releases only this app's assertions." : ""
+        item.button?.toolTip = "\(statusRow.title). App controls: system \(awake.isEnabled(.system) ? "on" : "off"), display \(awake.isEnabled(.display) ? "on" : "off").\(steamHelp)"
+        item.button?.setAccessibilityLabel(statusRow.title)
     }
 
     private func perform(_ operation: () throws -> Void) {

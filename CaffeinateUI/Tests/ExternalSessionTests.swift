@@ -9,6 +9,25 @@ import Testing
 private func cli(_ pid: Int32 = 100, type: String = "PreventUserIdleSystemSleep", name: String = "caffeinate command-line tool") -> SleepAssertion {
     SleepAssertion(pid: pid, id: UInt32(pid), type: type, name: name)
 }
+@MainActor @Test func steamTracksAppAndCLIIndependentlyAcrossOffAndReopen() throws {
+    let controller = AwakeController(backend: TestBackend())
+    #expect(!controller.isSessionActive)
+    try controller.set(.system, enabled: true)
+    #expect(controller.isActive && controller.isSessionActive && !controller.isEnabled(.display))
+    try controller.turnOff()
+    #expect(!controller.isActive && !controller.isSessionActive)
+    controller.observeExternalAssertions([cli()])
+    #expect(!controller.isActive && controller.isSessionActive)
+    try controller.set(.system, enabled: true)
+    try controller.turnOff()
+    #expect(!controller.isActive && controller.isSessionActive && !controller.isEnabled(.display))
+    let reopened = AwakeController(backend: TestBackend())
+    reopened.observeExternalAssertions([cli()])
+    #expect(!reopened.isActive && reopened.isSessionActive)
+    controller.observeExternalAssertions([])
+    reopened.observeExternalAssertions([])
+    #expect(!controller.isSessionActive && !reopened.isSessionActive)
+}
 @MainActor @Test func qualifyingCLIContinuesAcrossOwnersAndNeverCountsUnrelatedApps() throws {
     var time: TimeInterval = 0
     let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("Resources/Badges/catalog.json")

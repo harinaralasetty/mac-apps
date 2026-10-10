@@ -9,7 +9,7 @@ Start with the [README](README.md) for product behavior and supported commands. 
 | [CaffeinateUIApp.swift](CaffeinateUI/Sources/App/CaffeinateUIApp.swift) | AppKit lifecycle, duplicate-instance check, reopen handling and diagnostics |
 | [StatusBarController.swift](CaffeinateUI/Sources/Support/StatusBarController.swift) | Menu actions, common-mode one-second polling, power/sleep notifications and UI updates |
 | [AwardsWindowController.swift](CaffeinateUI/Sources/Support/AwardsWindowController.swift) | Retained native window, SwiftUI cards, cached grayscale locked images |
-| [CupIcon.swift](CaffeinateUI/Sources/Support/CupIcon.swift) | App-owned steaming/plain status artwork |
+| [CupIcon.swift](CaffeinateUI/Sources/Support/CupIcon.swift) | Steaming/plain artwork for app or qualifying CLI activity |
 | [AwakeController.swift](CaffeinateUI/Core/AwakeController.swift) | Owned IDs, independent controls, filtered external CLI observations and interval reconciliation |
 | [PowerAssertions.swift](CaffeinateUI/Core/PowerAssertions.swift) | IOKit create/release, active assertion snapshots, power-source classification, CLI identity/start metadata |
 | [AwakeSession.swift](CaffeinateUI/Core/AwakeSession.swift) | Catalog validation, elapsed progress, threshold unlocks and earned-ID persistence |

@@ -33,6 +33,8 @@ private func readAwards() throws -> [CaffeinateUIAward] {
     let session = AwakeSession(awards: try readAwards(), now: { clock.seconds })
     session.update(active: true)
     let thresholds: [TimeInterval] = [300, 3600, 14400, 28800, 86400, 259200, 604800, 1209600, 2592000, 5184000, 7776000, 31536000]
+    #expect(session.awards.first { $0.id == "legally-an-espresso-machine" }?.title == "Head Barista")
+    #expect(session.awards.first { $0.id == "your-mac-is-legally-a-cafe" }?.title == "Your Mac Is Legally a Café")
     let ids = ["first-sip", "espresso-yourself", "just-one-more-cup", "the-daily-grind", "certified-all-nighter", "decaf-is-a-myth", "sleep-is-a-rumor", "bean-there-done-that", "your-mac-is-legally-a-cafe", "roast-level-critical", "legally-an-espresso-machine", "caffeine-overdose"]
     for index in thresholds.indices {
         clock.seconds = 100 + thresholds[index] - 1

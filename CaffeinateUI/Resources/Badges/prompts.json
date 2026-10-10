@@ -62,5 +62,10 @@
       "caffeine-overdose": "Crowned coffee trophy"
     },
     "invariants": "The other eight images, IDs, thresholds, names and earned progress remain unchanged."
+  },
+  "display_title_updates": {
+    "2026-10-10": {
+      "legally-an-espresso-machine": "Head Barista"
+    }
   }
 }

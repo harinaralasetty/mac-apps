@@ -6,7 +6,7 @@ Names and times are deliberately separate from raster artwork, so native labels 
 
 Generated using the built-in image_gen tool, with First Sip as the style reference. The exact prompt set is retained in prompts.json. The app self-test verifies that all twelve images decode.
 
-The app bundles the twelve PNGs and catalog.json. The native Awards window uses this catalog for labels and thresholds. Earned IDs persist locally; current qualifying CLI session time also counts, including recovered time that may contain sleep. See the [Caffeine README](../../../README.md#timer-and-awards) for counting rules.
+The app bundles the twelve PNGs and catalog.json. The native Awards window uses this catalog for labels and thresholds. Earned IDs persist locally; current qualifying CLI session time also counts, including recovered time that may contain sleep. See the [Caffeinate UI README](../../../README.md#timer-and-awards) for counting rules.
 
 ## Badge gallery
 
@@ -22,5 +22,7 @@ The app bundles the twelve PNGs and catalog.json. The native Awards window uses 
 | <img src="bean-there-done-that.png" width="96" alt="Bean There, Done That" /> | Bean There, Done That | 14 days |
 | <img src="your-mac-is-legally-a-cafe.png" width="96" alt="Your Mac Is Legally a Café" /> | Your Mac Is Legally a Café | 30 days |
 | <img src="roast-level-critical.png" width="96" alt="Roast Level: Critical" /> | Roast Level: Critical | 60 days |
-| <img src="legally-an-espresso-machine.png" width="96" alt="Legally an Espresso Machine" /> | Legally an Espresso Machine | 90 days |
+| <img src="legally-an-espresso-machine.png" width="96" alt="Head Barista" /> | Head Barista | 90 days |
 | <img src="caffeine-overdose.png" width="96" alt="Caffeine Overdose" /> | Caffeine Overdose | 365 days |
+
+The 90-day Head Barista award retains its original `legally-an-espresso-machine` ID and filename to preserve earned progress.
